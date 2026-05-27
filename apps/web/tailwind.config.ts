@@ -10,6 +10,12 @@ export default {
         body: ['"DM Sans"', 'sans-serif'],
         mono: ['"DM Mono"', 'monospace'],
       },
+      fontWeight: {
+        '600': '600',
+        '700': '700',
+        '800': '800',
+        '900': '900',
+      },
       colors: {
         pitch: '#39ff14',
         amber: '#ffb800',

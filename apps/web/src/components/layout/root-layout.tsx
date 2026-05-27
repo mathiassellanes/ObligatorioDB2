@@ -22,7 +22,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
                             group-hover:shadow-[0_0_20px_#39ff1460] transition-all duration-300">
               <Ticket className="w-4 h-4 text-[#050914]" strokeWidth={2.5} />
             </div>
-            <span className="font-display font-900 text-lg tracking-tight uppercase text-[#e8edf8]">
+            <span className="font-display font-black text-lg tracking-tight uppercase text-[#e8edf8]">
               Mundial<span className="text-[#39ff14]">Ticket</span>
             </span>
           </Link>
@@ -32,15 +32,15 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
             <NavLink to="/">Eventos</NavLink>
             {loggedIn && rol === 'usuario_general' && (
               <>
-                <NavLink to="/dashboard">
+                <NavLink to="/u/entradas">
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Mis Entradas
                 </NavLink>
-                <NavLink to="/compras">
+                <NavLink to="/u/compras">
                   <ShoppingBag className="w-3.5 h-3.5" />
                   Compras
                 </NavLink>
-                <NavLink to="/transferencias">
+                <NavLink to="/u/transferencias">
                   <ArrowRightLeft className="w-3.5 h-3.5" />
                   Transferencias
                 </NavLink>
@@ -81,7 +81,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-[#1a2540] py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span className="font-display font-700 text-sm uppercase tracking-widest text-[#6b7a9c]">
+          <span className="font-display font-bold text-sm uppercase tracking-widest text-[#6b7a9c]">
             Mundial Ticket · UCU 2026
           </span>
           <span className="text-xs text-[#6b7a9c]/60 font-mono">BD II · Obligatorio</span>

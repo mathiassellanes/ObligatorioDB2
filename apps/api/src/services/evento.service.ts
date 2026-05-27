@@ -90,14 +90,37 @@ export async function habilitarSectores(id_evento: number, data: HabilitarSector
 export async function asignarFuncionario(
   id_evento: number,
   id_sector: number,
-  numero_legajo: string,
-  fecha: string
+  numero_legajo: string
 ) {
+  const func = await sql`
+    SELECT numero_legajo FROM funcionario_de_validacion WHERE numero_legajo = ${numero_legajo}
+  `
+  if (func.length === 0) throw new Error(`Funcionario con legajo "${numero_legajo}" no existe en el sistema`)
+
   const [row] = await sql`
-    INSERT INTO asignado_a (numero_legajo, id_sector, id_evento, fecha)
-    VALUES (${numero_legajo}, ${id_sector}, ${id_evento}, ${fecha})
+    INSERT INTO asignado_a (numero_legajo, id_sector, id_evento)
+    VALUES (${numero_legajo}, ${id_sector}, ${id_evento})
     ON CONFLICT DO NOTHING
     RETURNING *
   `
   return row
+}
+
+export async function getAsignaciones(id_evento: number) {
+  return sql`
+    SELECT
+      a.numero_legajo,
+      f.email AS email_funcionario,
+      s.nombre AS nombre_sector,
+      COUNT(e.id) FILTER (WHERE e.id IS NOT NULL)     AS total_entradas,
+      COUNT(e.id) FILTER (WHERE e.consumida = true)   AS entradas_validadas,
+      a.validacion_completa
+    FROM asignado_a a
+    JOIN funcionario_de_validacion f ON f.numero_legajo = a.numero_legajo
+    JOIN sector s ON s.id = a.id_sector
+    LEFT JOIN entrada e ON e.id_sector = a.id_sector AND e.id_evento = a.id_evento
+    WHERE a.id_evento = ${id_evento}
+    GROUP BY a.numero_legajo, f.email, s.nombre, a.validacion_completa
+    ORDER BY s.nombre, a.numero_legajo
+  `
 }

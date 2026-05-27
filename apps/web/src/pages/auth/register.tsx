@@ -47,7 +47,7 @@ export function RegisterPage() {
       </div>
 
       <div className="card card-glow p-8">
-        <h1 className="font-display font-900 text-3xl uppercase tracking-tight mb-1">Crear cuenta</h1>
+        <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-1">Crear cuenta</h1>
         <p className="text-[#6b7a9c] text-sm mb-8">Registrate para comprar entradas al Mundial 2026</p>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -145,7 +145,7 @@ export function RegisterPage() {
 
         <div className="mt-6 text-center">
           <span className="text-[#6b7a9c] text-sm">¿Ya tenés cuenta? </span>
-          <Link to="/login" className="text-[#39ff14] text-sm hover:underline font-600">Ingresar</Link>
+          <Link to="/login" className="text-[#39ff14] text-sm hover:underline font-semibold">Ingresar</Link>
         </div>
       </div>
     </div>
@@ -156,7 +156,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
-        <span className="font-display font-700 text-xs tracking-widest uppercase text-[#39ff14]">{title}</span>
+        <span className="font-display font-bold text-xs tracking-widest uppercase text-[#39ff14]">{title}</span>
         <div className="flex-1 h-px bg-[#1a2540]" />
       </div>
       <div className="space-y-3">{children}</div>

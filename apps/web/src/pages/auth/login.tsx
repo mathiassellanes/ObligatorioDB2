@@ -40,7 +40,7 @@ export function LoginPage() {
         </div>
 
         <div className="card card-glow p-8">
-          <h1 className="font-display font-900 text-3xl uppercase tracking-tight mb-1">
+          <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-1">
             Ingresar
           </h1>
           <p className="text-[#6b7a9c] text-sm mb-8">
@@ -95,7 +95,7 @@ export function LoginPage() {
 
           <div className="mt-6 text-center">
             <span className="text-[#6b7a9c] text-sm">¿No tenés cuenta? </span>
-            <Link to="/register" className="text-[#39ff14] text-sm hover:underline font-600">
+            <Link to="/register" className="text-[#39ff14] text-sm hover:underline font-semibold">
               Registrarse
             </Link>
           </div>

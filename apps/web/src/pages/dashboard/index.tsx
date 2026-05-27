@@ -55,7 +55,7 @@ function EntradaCard({ entrada }: { entrada: EntradaConEvento }) {
             {fecha.toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })}
             {' · '}{entrada.hora_evento?.toString().slice(0, 5)}h
           </div>
-          <h3 className="font-display font-800 text-lg uppercase leading-tight">
+          <h3 className="font-display font-extrabold text-lg uppercase leading-tight">
             <span className="text-[#39ff14]">{entrada.nombre_equipo_local}</span>
             <span className="text-[#6b7a9c] mx-2 text-base">vs</span>
             {entrada.nombre_equipo_visitante}

@@ -59,7 +59,7 @@ export function EventoDetailPage() {
               {fecha.toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               {' · '}{evento.hora?.toString().slice(0, 5)}h
             </div>
-            <h1 className="font-display font-900 text-4xl md:text-5xl uppercase tracking-tight leading-none mb-2">
+            <h1 className="font-display font-black text-4xl md:text-5xl uppercase tracking-tight leading-none mb-2">
               <span className="text-[#39ff14]">{evento.nombre_equipo_local}</span>
               <span className="text-[#6b7a9c] mx-3 text-3xl">vs</span>
               <span>{evento.nombre_equipo_visitante}</span>
@@ -86,14 +86,14 @@ export function EventoDetailPage() {
               className={`card p-5 transition-all duration-200 ${qty > 0 ? 'border-[#39ff1440] shadow-[0_0_20px_#39ff1408]' : 'hover:border-[#1a2540]'}`}>
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-display font-800 text-lg uppercase">{sector.nombre}</h3>
+                  <h3 className="font-display font-extrabold text-lg uppercase">{sector.nombre}</h3>
                   <div className="flex items-center gap-1 text-[#6b7a9c] text-xs mt-1">
                     <Users className="w-3 h-3" />
                     {disponibles} disponibles de {sector.capacidad_maxima}
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="font-display font-900 text-2xl text-[#39ff14]">
+                  <span className="font-display font-black text-2xl text-[#39ff14]">
                     ${Number(sector.costo_entrada).toLocaleString()}
                   </span>
                   <div className="text-[#6b7a9c] text-xs">USD por entrada</div>
@@ -117,7 +117,7 @@ export function EventoDetailPage() {
                                text-[#e8edf8] hover:border-[#39ff1460] transition-colors disabled:opacity-40"
                     disabled={qty === 0}
                   >−</button>
-                  <span className="font-display font-700 text-xl w-6 text-center">{qty}</span>
+                  <span className="font-display font-bold text-xl w-6 text-center">{qty}</span>
                   <button
                     onClick={() => {
                       if (totalEntradas >= 5) return
@@ -139,7 +139,7 @@ export function EventoDetailPage() {
       {getRol() === 'usuario_general' && totalEntradas > 0 && (
         <div className="card card-glow p-5 flex items-center justify-between">
           <div>
-            <div className="font-display font-900 text-xl">
+            <div className="font-display font-black text-xl">
               {totalEntradas} entrada{totalEntradas > 1 ? 's' : ''} seleccionada{totalEntradas > 1 ? 's' : ''}
             </div>
             <div className="text-[#6b7a9c] text-xs mt-0.5">Máximo 5 por transacción</div>
@@ -147,7 +147,7 @@ export function EventoDetailPage() {
           {success ? (
             <div className="flex items-center gap-2 text-[#39ff14]">
               <CheckCircle className="w-5 h-5" />
-              <span className="font-display font-700">¡Compra exitosa!</span>
+              <span className="font-display font-bold">¡Compra exitosa!</span>
             </div>
           ) : (
             <button
@@ -184,7 +184,7 @@ export function EventoDetailPage() {
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-center">
-      <div className="font-display font-900 text-3xl text-[#39ff14]">{value}</div>
+      <div className="font-display font-black text-3xl text-[#39ff14]">{value}</div>
       <div className="text-[#6b7a9c] text-xs uppercase tracking-widest font-display">{label}</div>
     </div>
   )

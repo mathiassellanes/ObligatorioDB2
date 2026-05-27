@@ -52,3 +52,21 @@ export async function asignarEstadioAdmin(email_admin: string, id_estadio: numbe
   `
   return row
 }
+
+export async function getEstadioConSectores(id: number) {
+  const [row] = await sql`SELECT * FROM estadio WHERE id = ${id}`
+  if (!row) throw new Error('Estadio no encontrado')
+  const sectores = await sql`SELECT * FROM sector WHERE id_estadio = ${id} ORDER BY nombre`
+  return { ...row, sectores }
+}
+
+export async function eventosEnEstadio(id_estadio: number) {
+  return sql`
+    SELECT e.*, el.nombre AS nombre_equipo_local, ev.nombre AS nombre_equipo_visitante
+    FROM evento e
+    JOIN equipo el ON el.id = e.id_equipo_local
+    JOIN equipo ev ON ev.id = e.id_equipo_visitante
+    WHERE e.id_estadio = ${id_estadio}
+    ORDER BY e.fecha DESC, e.hora
+  `
+}

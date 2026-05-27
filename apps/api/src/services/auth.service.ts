@@ -99,3 +99,21 @@ export async function getMe(email: string) {
 
   return { ...perfil, telefonos: telefonos.map((t) => t.telefono) }
 }
+
+export async function updatePerfil(email: string, data: {
+  dir_pais: string; dir_localidad: string; dir_calle: string
+  dir_numero: string; dir_codigo_postal: string
+}) {
+  const [row] = await sql`
+    UPDATE perfil SET
+      dir_pais = ${data.dir_pais},
+      dir_localidad = ${data.dir_localidad},
+      dir_calle = ${data.dir_calle},
+      dir_numero = ${data.dir_numero},
+      dir_codigo_postal = ${data.dir_codigo_postal}
+    WHERE email = ${email}
+    RETURNING *
+  `
+  if (!row) throw new Error('Perfil no encontrado')
+  return row
+}

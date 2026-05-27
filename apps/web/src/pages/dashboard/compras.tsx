@@ -56,7 +56,7 @@ function VentaRow({ venta }: { venta: VentaConConteo }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-display font-700 text-sm">Venta #{venta.id}</span>
+          <span className="font-display font-bold text-sm">Venta #{venta.id}</span>
           <span className={estadoColor}>{venta.estado}</span>
         </div>
         <div className="flex items-center gap-3 text-xs text-[#6b7a9c]">
@@ -72,7 +72,7 @@ function VentaRow({ venta }: { venta: VentaConConteo }) {
       </div>
 
       <div className="text-right shrink-0">
-        <div className="font-display font-900 text-xl text-[#39ff14]">
+        <div className="font-display font-black text-xl text-[#39ff14]">
           ${Number(venta.monto_total).toLocaleString()}
         </div>
         <div className="text-[#6b7a9c] text-xs">

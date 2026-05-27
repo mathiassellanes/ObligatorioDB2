@@ -59,7 +59,7 @@ export function FuncionarioPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Scanner */}
         <div className="card card-glow p-6">
-          <h2 className="font-display font-800 text-sm uppercase tracking-widest text-[#39ff14] mb-5">
+          <h2 className="font-display font-extrabold text-sm uppercase tracking-widest text-[#39ff14] mb-5">
             Escanear QR
           </h2>
 
@@ -100,7 +100,7 @@ export function FuncionarioPage() {
 
         {/* Sectores asignados */}
         <div>
-          <h2 className="font-display font-800 text-sm uppercase tracking-widest text-[#6b7a9c] mb-4">
+          <h2 className="font-display font-extrabold text-sm uppercase tracking-widest text-[#6b7a9c] mb-4">
             Mis sectores asignados
           </h2>
 
@@ -125,7 +125,7 @@ export function FuncionarioPage() {
               {sectores.map((s) => (
                 <div key={s.id_sector} className="card p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-display font-800 text-sm uppercase">{s.nombre_sector}</span>
+                    <span className="font-display font-extrabold text-sm uppercase">{s.nombre_sector}</span>
                     {s.validacion_completa
                       ? <span className="badge-pitch flex items-center gap-1"><CheckCircle className="w-3 h-3" />Completo</span>
                       : <span className="badge-amber">En curso</span>}

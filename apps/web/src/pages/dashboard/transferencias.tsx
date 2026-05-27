@@ -53,7 +53,7 @@ export function TransferenciasPage() {
       <div className="flex gap-1 mb-6 bg-[#090f20] p-1 rounded-xl border border-[#1a2540]">
         {([['historial', 'Historial'], ['pendientes', `Pendientes${pendientes.length ? ` (${pendientes.length})` : ''}`], ['nueva', 'Nueva']] as const).map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`flex-1 py-2 rounded-lg text-sm font-display font-700 uppercase tracking-wide transition-all ${
+            className={`flex-1 py-2 rounded-lg text-sm font-display font-bold uppercase tracking-wide transition-all ${
               tab === key ? 'bg-[#39ff14] text-[#050914]' : 'text-[#6b7a9c] hover:text-[#e8edf8]'
             }`}>
             {label}
@@ -102,7 +102,7 @@ export function TransferenciasPage() {
       {/* Nueva */}
       {tab === 'nueva' && (
         <div className="card card-glow p-6">
-          <h2 className="font-display font-800 text-lg uppercase mb-5">Nueva transferencia</h2>
+          <h2 className="font-display font-extrabold text-lg uppercase mb-5">Nueva transferencia</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Entrada a transferir</label>

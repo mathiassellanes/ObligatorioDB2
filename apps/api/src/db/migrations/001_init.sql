@@ -35,7 +35,7 @@ CREATE TABLE telefono (
 
 CREATE TABLE admin_por_pais_sede (
   email            VARCHAR(255) PRIMARY KEY REFERENCES perfil(email) ON DELETE CASCADE,
-  fecha_asignacion DATE NOT NULL
+  fecha_asignacion DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 CREATE TABLE funcionario_de_validacion (
@@ -106,7 +106,7 @@ CREATE TABLE asignado_a (
   numero_legajo      VARCHAR(50) REFERENCES funcionario_de_validacion(numero_legajo) ON DELETE CASCADE,
   id_sector          INTEGER     NOT NULL,
   id_evento          INTEGER     NOT NULL,
-  fecha              DATE        NOT NULL,
+  fecha              DATE        NOT NULL DEFAULT CURRENT_DATE,
   validacion_completa BOOLEAN    NOT NULL DEFAULT FALSE,
   PRIMARY KEY (numero_legajo, id_sector, id_evento),
   FOREIGN KEY (id_sector, id_evento) REFERENCES sector_evento(id_sector, id_evento)

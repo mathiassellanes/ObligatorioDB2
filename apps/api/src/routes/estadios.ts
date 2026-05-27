@@ -53,4 +53,20 @@ estadios.post(
   }
 )
 
+estadios.get('/:id', zValidator('param', z.object({ id: z.coerce.number() })), async (c) => {
+  const { id } = c.req.valid('param')
+  try {
+    const row = await estadioService.getEstadioConSectores(id)
+    return c.json(row)
+  } catch (err) {
+    return c.json({ error: (err as Error).message }, 404)
+  }
+})
+
+estadios.get('/:id/eventos', zValidator('param', z.object({ id: z.coerce.number() })), async (c) => {
+  const { id } = c.req.valid('param')
+  const rows = await estadioService.eventosEnEstadio(id)
+  return c.json(rows)
+})
+
 export default estadios

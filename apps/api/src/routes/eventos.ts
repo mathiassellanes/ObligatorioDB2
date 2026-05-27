@@ -67,17 +67,29 @@ eventos.post(
   zValidator('json', z.object({
     id_sector: z.number().int().positive(),
     numero_legajo: z.string().min(1),
-    fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   })),
   async (c) => {
     const { id } = c.req.valid('param')
     const body = c.req.valid('json')
     try {
-      const row = await eventoService.asignarFuncionario(id, body.id_sector, body.numero_legajo, body.fecha)
+      const row = await eventoService.asignarFuncionario(id, body.id_sector, body.numero_legajo)
       return c.json(row, 201)
     } catch (err) {
       return c.json({ error: (err as Error).message }, 400)
     }
+  }
+)
+
+
+eventos.get(
+  '/:id/asignaciones',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.coerce.number() })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    const rows = await eventoService.getAsignaciones(id)
+    return c.json(rows)
   }
 )
 

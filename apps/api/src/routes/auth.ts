@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { CreatePerfilDTO, LoginDTO } from '@repo/shared'
@@ -34,6 +35,20 @@ auth.get('/me', authMiddleware, async (c) => {
   } catch (err) {
     return c.json({ error: (err as Error).message }, 404)
   }
+})
+
+
+auth.put('/perfil', authMiddleware, zValidator('json', z.object({
+  dir_pais: z.string().min(1).max(100),
+  dir_localidad: z.string().min(1).max(100),
+  dir_calle: z.string().min(1).max(200),
+  dir_numero: z.string().min(1).max(20),
+  dir_codigo_postal: z.string().min(1).max(20),
+})), async (c) => {
+  const user = c.get('user')
+  const body = c.req.valid('json')
+  const perfil = await authService.updatePerfil(user.sub, body)
+  return c.json(perfil)
 })
 
 export default auth

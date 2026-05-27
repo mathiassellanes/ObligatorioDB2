@@ -35,7 +35,7 @@ export function QRPage() {
         <h1 className="section-title text-3xl mb-2">QR Dinámico</h1>
         <p className="text-[#6b7a9c] text-sm">
           Código rotativo — válido por{' '}
-          <span className="text-[#39ff14] font-mono font-600">{countdown}s</span>
+          <span className="text-[#39ff14] font-mono font-semibold">{countdown}s</span>
         </p>
       </div>
 

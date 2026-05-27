@@ -45,7 +45,7 @@
   }
 
   .btn-pitch {
-    @apply bg-[#39ff14] text-[#050914] font-display font-800 text-sm tracking-widest uppercase
+    @apply bg-[#39ff14] text-[#050914] font-display font-extrabold text-sm tracking-widest uppercase
            px-6 py-2.5 rounded-lg transition-all duration-200
            hover:shadow-[0_0_20px_#39ff1460] hover:scale-[1.02] active:scale-[0.98];
   }
@@ -64,29 +64,29 @@
   }
 
   .label {
-    @apply text-xs font-display font-600 tracking-widest uppercase text-[#6b7a9c] mb-1.5 block;
+    @apply text-xs font-display font-semibold tracking-widest uppercase text-[#6b7a9c] mb-1.5 block;
   }
 
   .section-title {
-    @apply font-display font-800 text-4xl tracking-tight uppercase text-[#e8edf8];
+    @apply font-display font-extrabold text-4xl tracking-tight uppercase text-[#e8edf8];
   }
 
   .stat-number {
-    @apply font-display font-900 text-5xl tracking-tighter text-[#39ff14];
+    @apply font-display font-black text-5xl tracking-tighter text-[#39ff14];
   }
 
   .badge-pitch {
-    @apply bg-[#39ff1420] text-[#39ff14] text-xs font-display font-700 tracking-wider uppercase
+    @apply bg-[#39ff1420] text-[#39ff14] text-xs font-display font-bold tracking-wider uppercase
            px-2.5 py-1 rounded-full border border-[#39ff1430];
   }
 
   .badge-amber {
-    @apply bg-[#ffb80020] text-[#ffb800] text-xs font-display font-700 tracking-wider uppercase
+    @apply bg-[#ffb80020] text-[#ffb800] text-xs font-display font-bold tracking-wider uppercase
            px-2.5 py-1 rounded-full border border-[#ffb80030];
   }
 
   .badge-red {
-    @apply bg-red-500/20 text-red-400 text-xs font-display font-700 tracking-wider uppercase
+    @apply bg-red-500/20 text-red-400 text-xs font-display font-bold tracking-wider uppercase
            px-2.5 py-1 rounded-full border border-red-500/30;
   }
 }

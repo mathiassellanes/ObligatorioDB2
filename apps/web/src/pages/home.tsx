@@ -21,7 +21,7 @@ export function HomePage() {
             <Zap className="w-3 h-3" />
             FIFA World Cup 2026
           </div>
-          <h1 className="font-display font-900 text-6xl md:text-8xl uppercase tracking-tight text-[#e8edf8] leading-none mb-4">
+          <h1 className="font-display font-black text-6xl md:text-8xl uppercase tracking-tight text-[#e8edf8] leading-none mb-4">
             Conseguí tu<br />
             <span className="text-[#39ff14]">entrada</span>
           </h1>
@@ -84,8 +84,8 @@ function EventoCard({ evento, index }: { evento: EventoConNombres; index: number
         {/* Date badge */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex flex-col items-center bg-[#0d1529] rounded-xl p-3 min-w-[56px] border border-[#1a2540]">
-            <span className="font-display font-900 text-2xl leading-none text-[#39ff14]">{dia}</span>
-            <span className="font-display font-700 text-xs tracking-widest text-[#6b7a9c] mt-0.5">{mes}</span>
+            <span className="font-display font-black text-2xl leading-none text-[#39ff14]">{dia}</span>
+            <span className="font-display font-bold text-xs tracking-widest text-[#6b7a9c] mt-0.5">{mes}</span>
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="badge-pitch">Ver entradas</div>
@@ -97,11 +97,11 @@ function EventoCard({ evento, index }: { evento: EventoConNombres; index: number
 
         {/* Teams */}
         <div className="flex items-center gap-3 mb-4">
-          <span className="font-display font-800 text-xl uppercase tracking-tight text-[#e8edf8] group-hover:text-[#39ff14] transition-colors">
+          <span className="font-display font-extrabold text-xl uppercase tracking-tight text-[#e8edf8] group-hover:text-[#39ff14] transition-colors">
             {evento.nombre_equipo_local}
           </span>
-          <span className="font-display font-600 text-sm text-[#6b7a9c] shrink-0">vs</span>
-          <span className="font-display font-800 text-xl uppercase tracking-tight text-[#e8edf8]">
+          <span className="font-display font-semibold text-sm text-[#6b7a9c] shrink-0">vs</span>
+          <span className="font-display font-extrabold text-xl uppercase tracking-tight text-[#e8edf8]">
             {evento.nombre_equipo_visitante}
           </span>
         </div>
