@@ -34,6 +34,11 @@ export function AdminEventoDetailPage() {
     queryFn: () => api.get(`/eventos/${id}/asignaciones`),
   })
 
+  const { data: funcionarios = [] } = useQuery<{ numero_legajo: string; email: string }[]>({
+    queryKey: ['admin-funcionarios'],
+    queryFn: () => api.get('/admin/funcionarios'),
+  })
+
   const [sectoresForm, setSectoresForm] = useState<{ id_sector: number; costo_entrada: string }[]>([])
   const [showHabilitar, setShowHabilitar] = useState(false)
 
@@ -178,10 +183,16 @@ export function AdminEventoDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="label">Nro. Legajo</label>
-                <input className="input-field" placeholder="Legajo del funcionario"
-                  value={asignarForm.numero_legajo}
-                  onChange={e => setAsignarForm(f => ({ ...f, numero_legajo: e.target.value }))} />
+                <label className="label">Funcionario</label>
+                <select className="input-field" value={asignarForm.numero_legajo}
+                  onChange={e => setAsignarForm(f => ({ ...f, numero_legajo: e.target.value }))}>
+                  <option value="">Seleccioná funcionario...</option>
+                  {funcionarios.map(f => (
+                    <option key={f.numero_legajo} value={f.numero_legajo}>
+                      {f.numero_legajo} — {f.email}
+                    </option>
+                  ))}
+                </select>
               </div>
               {asignarMutation.isError && (
                 <p className="text-red-400 text-xs">{(asignarMutation.error as Error).message}</p>
