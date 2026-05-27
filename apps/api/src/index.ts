@@ -1,3 +1,4 @@
+import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
@@ -30,9 +31,7 @@ app.route('/qr', qrRoutes)
 app.route('/reportes', reportesRoutes)
 
 const port = Number(process.env['PORT'] ?? 3000)
-console.log(`API running on port ${port}`)
 
-export default {
-  port,
-  fetch: app.fetch,
-}
+serve({ fetch: app.fetch, port }, () => {
+  console.log(`API running on http://localhost:${port}`)
+})
