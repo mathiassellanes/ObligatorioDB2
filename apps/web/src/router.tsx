@@ -18,6 +18,7 @@ import { DashboardPage } from '@/pages/dashboard'
 import { ComprasPage } from '@/pages/dashboard/compras'
 import { QRPage } from '@/pages/dashboard/qr'
 import { FuncionarioPage } from '@/pages/funcionario'
+import { FuncionarioResultadoPage } from '@/pages/funcionario/resultado'
 import { PerfilPage } from '@/pages/user/perfil'
 import { EntradasPage } from '@/pages/user/entradas'
 import { TransferenciasPage } from '@/pages/user/transferencias'
@@ -30,6 +31,7 @@ import { AdminEquiposPage } from '@/pages/admin/equipos'
 import { AdminEquipoDetailPage } from '@/pages/admin/equipos/detail'
 import { AdminReportesPage } from '@/pages/admin/reportes'
 import { AdminFuncionariosPage } from '@/pages/admin/funcionarios'
+import { AdminDispositivosPage } from '@/pages/admin/dispositivos'
 
 // Root
 const rootRoute = createRootRoute({
@@ -49,7 +51,34 @@ const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/da
 const comprasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/compras', component: ComprasPage })
 const transferenciasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/transferencias', component: TransferenciasPage })
 const qrRoute = createRoute({ getParentRoute: () => rootRoute, path: '/qr/$id', component: QRPage })
-const funcionarioRoute = createRoute({ getParentRoute: () => rootRoute, path: '/funcionario', component: FuncionarioPage })
+
+// Funcionario routes (guard: funcionario_de_validacion only)
+const funcionarioLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/funcionario',
+  component: Outlet,
+  beforeLoad: () => {
+    if (!isLoggedIn() || getRol() !== 'funcionario_de_validacion') {
+      throw redirect({ to: '/login' })
+    }
+  },
+})
+const funcionarioRoute = createRoute({
+  getParentRoute: () => funcionarioLayoutRoute,
+  path: '/',
+  component: FuncionarioPage,
+})
+const funcionarioResultadoRoute = createRoute({
+  getParentRoute: () => funcionarioLayoutRoute,
+  path: '/resultado',
+  component: FuncionarioResultadoPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    codigo: String(s.codigo ?? ''),
+    dispositivo: String(s.dispositivo ?? ''),
+    sector: Number(s.sector ?? 0),
+    evento: Number(s.evento ?? 0),
+  }),
+})
 
 // Admin layout (guard: admin_por_pais_sede only)
 const adminLayoutRoute = createRoute({
@@ -108,6 +137,11 @@ const adminFuncionariosRoute = createRoute({
   path: '/funcionarios',
   component: AdminFuncionariosPage,
 })
+const adminDispositivosRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/dispositivos',
+  component: AdminDispositivosPage,
+})
 
 
 // User layout (guard: must be logged in as usuario_general)
@@ -136,6 +170,13 @@ const userTransferenciasRoute = createRoute({
   component: TransferenciasPage,
 })
 
+// Funcionario perfil reuses PerfilPage under /u/perfil via a standalone route
+const funcionarioPerfilRoute = createRoute({
+  getParentRoute: () => funcionarioLayoutRoute,
+  path: '/perfil',
+  component: PerfilPage,
+})
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -145,7 +186,11 @@ const routeTree = rootRoute.addChildren([
   comprasRoute,
   transferenciasRoute,
   qrRoute,
-  funcionarioRoute,
+  funcionarioLayoutRoute.addChildren([
+    funcionarioRoute,
+    funcionarioResultadoRoute,
+    funcionarioPerfilRoute,
+  ]),
   userLayoutRoute.addChildren([
     userPerfilRoute,
     userEntradasRoute,
@@ -161,6 +206,7 @@ const routeTree = rootRoute.addChildren([
     adminEquipoDetailRoute,
     adminReportesRoute,
     adminFuncionariosRoute,
+    adminDispositivosRoute,
   ]),
 ])
 

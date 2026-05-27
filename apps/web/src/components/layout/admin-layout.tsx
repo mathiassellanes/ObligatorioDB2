@@ -4,7 +4,7 @@ import { api } from '@/api/client'
 import type { Estadio } from '@repo/shared'
 import {
   Shield, Building2, Calendar, Users, BarChart3,
-  ChevronRight, LogOut, Globe
+  ChevronRight, LogOut, Globe, Smartphone
 } from 'lucide-react'
 import { logout } from '@/lib/auth'
 
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/admin/eventos', icon: Calendar, label: 'Eventos' },
   { to: '/admin/equipos', icon: Users, label: 'Equipos' },
   { to: '/admin/funcionarios', icon: Shield, label: 'Funcionarios' },
+  { to: '/admin/dispositivos', icon: Smartphone, label: 'Dispositivos' },
   { to: '/admin/reportes', icon: BarChart3, label: 'Reportes' },
 ] as const
 

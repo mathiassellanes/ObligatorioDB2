@@ -1,170 +1,216 @@
-import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import type { EventoConNombres } from '@repo/shared'
-import { Scan, CheckCircle, XCircle, Shield, Loader2, ChevronDown } from 'lucide-react'
+import { Html5Qrcode } from 'html5-qrcode'
+import { Camera, Keyboard, Scan, Shield, Loader2, AlertTriangle } from 'lucide-react'
 
 type SectorAsignado = {
   id_sector: number
   id_evento: number
   nombre_sector: string
-  capacidad_maxima: number
-  validadas: number
+  nombre_equipo_local: string
+  nombre_equipo_visitante: string
+  fecha_evento: string
   validacion_completa: boolean
-  fecha: string
+}
+
+type FuncionarioMe = {
+  dispositivo_id: string | null
+  sectores: SectorAsignado[]
 }
 
 export function FuncionarioPage() {
-  const [eventoId, setEventoId] = useState<number | null>(null)
-  const [codigoQR, setCodigoQR] = useState('')
-  const [dispositivoId, setDispositivoId] = useState('')
-  const [resultado, setResultado] = useState<{ ok: boolean; mensaje: string } | null>(null)
-  const [showSectores, setShowSectores] = useState(false)
+  const router = useRouter()
+  const [mode, setMode] = useState<'camera' | 'manual'>('camera')
+  const [sectorKey, setSectorKey] = useState('')
+  const [manual, setManual] = useState('')
+  const [scanning, setScanning] = useState(false)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const { data: eventos = [] } = useQuery<EventoConNombres[]>({
-    queryKey: ['eventos'],
-    queryFn: () => api.get('/eventos'),
+  const { data: me, isLoading } = useQuery<FuncionarioMe>({
+    queryKey: ['funcionario-me'],
+    queryFn: () => api.get('/qr/funcionario/me'),
   })
 
-  const { data: sectores = [] } = useQuery<SectorAsignado[]>({
-    queryKey: ['sectores-asignados', eventoId],
-    queryFn: () => api.get(`/qr/sectores/${eventoId}`),
-    enabled: !!eventoId,
-  })
+  const sectores = me?.sectores ?? []
+  const selectedSector = sectores.find(s => `${s.id_sector}-${s.id_evento}` === sectorKey)
 
-  const validarMutation = useMutation({
-    mutationFn: () => api.post('/qr/validar', { codigo_rotativo: codigoQR, id_dispositivo: dispositivoId }),
-    onSuccess: () => {
-      setResultado({ ok: true, mensaje: 'Entrada válida. Acceso autorizado.' })
-      setCodigoQR('')
-      setTimeout(() => setResultado(null), 4000)
-    },
-    onError: (err) => {
-      setResultado({ ok: false, mensaje: (err as Error).message })
-      setTimeout(() => setResultado(null), 4000)
-    },
-  })
+  // Start/stop camera scanner
+  useEffect(() => {
+    if (mode !== 'camera' || !sectorKey) return
+
+    const qr = new Html5Qrcode('qr-reader')
+    scannerRef.current = qr
+
+    qr.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      (decodedText) => {
+        qr.stop().then(() => {
+          scannerRef.current = null
+          navigate(decodedText)
+        })
+      },
+      () => { /* ignore errors while scanning */ }
+    ).catch(() => {
+      setMode('manual')
+    })
+
+    return () => {
+      qr.stop().catch(() => {})
+    }
+  }, [mode, sectorKey])
+
+  function navigate(codigo: string) {
+    if (!me?.dispositivo_id || !selectedSector) return
+    router.navigate({
+      to: '/funcionario/resultado',
+      search: {
+        codigo,
+        dispositivo: me.dispositivo_id,
+        sector: selectedSector.id_sector,
+        evento: selectedSector.id_evento,
+      }
+    })
+  }
+
+  function handleManualSubmit() {
+    if (manual.trim()) navigate(manual.trim())
+  }
+
+  if (isLoading) return (
+    <div className="min-h-screen bg-[#050914] flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-[#39ff14] animate-spin" />
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-[#050914]">
-      <div className="max-w-lg mx-auto px-4 py-8 sm:py-12">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-[#39ff14]/10 rounded-xl flex items-center justify-center border border-[#39ff14]/20 shrink-0">
-            <Scan className="w-5 h-5 text-[#39ff14]" />
+    <div className="min-h-[calc(100vh-64px)] bg-[#050914]">
+      <div className="max-w-md mx-auto px-4 py-6">
+
+        {/* No device warning */}
+        {!me?.dispositivo_id && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-5 flex items-start gap-3">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-amber-400 text-sm">Sin dispositivo asignado. Contactá al administrador.</p>
           </div>
-          <div>
-            <h1 className="section-title text-2xl sm:text-3xl">Validación</h1>
-            <p className="text-[#6b7a9c] text-sm">Control de acceso en puerta</p>
-          </div>
-        </div>
+        )}
 
-        {/* Scanner card — always prominent on mobile */}
-        <div className="card card-glow p-5 sm:p-6 mb-5">
-          <h2 className="font-display font-extrabold text-sm uppercase tracking-widest text-[#39ff14] mb-5">
-            Escanear QR
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="label">ID del dispositivo</label>
-              <input className="input-field font-mono text-xs" placeholder="UUID del dispositivo autorizado"
-                value={dispositivoId} onChange={e => setDispositivoId(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Código QR</label>
-              <input
-                className="input-field font-mono text-sm"
-                placeholder="Escanear o ingresar código"
-                value={codigoQR}
-                onChange={e => setCodigoQR(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && codigoQR && dispositivoId) validarMutation.mutate()
-                }}
-                autoFocus
-              />
-            </div>
-
-            {resultado && (
-              <div className={`rounded-xl px-4 py-4 flex items-start gap-3 text-sm border transition-all ${
-                resultado.ok
-                  ? 'bg-[#39ff1410] border-[#39ff1430] text-[#39ff14]'
-                  : 'bg-red-500/10 border-red-500/30 text-red-400'
-              }`}>
-                {resultado.ok
-                  ? <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                  : <XCircle className="w-5 h-5 shrink-0 mt-0.5" />}
-                <span className="font-display font-bold">{resultado.mensaje}</span>
-              </div>
-            )}
-
-            <button
-              onClick={() => validarMutation.mutate()}
-              disabled={!codigoQR || !dispositivoId || validarMutation.isPending}
-              className="btn-pitch w-full flex items-center justify-center gap-2 py-3 text-base"
-            >
-              {validarMutation.isPending
-                ? <><Loader2 className="w-5 h-5 animate-spin" />Validando...</>
-                : <><Scan className="w-5 h-5" />Validar entrada</>}
-            </button>
-          </div>
-        </div>
-
-        {/* Sectores asignados — collapsible on mobile */}
-        <div className="card overflow-hidden">
-          <button
-            onClick={() => setShowSectores(!showSectores)}
-            className="w-full flex items-center justify-between px-5 py-4 text-left"
+        {/* Sector select */}
+        <div className="mb-5">
+          <label className="label mb-2">Sector de validación</label>
+          <select
+            className="input-field text-base"
+            value={sectorKey}
+            onChange={e => {
+              setSectorKey(e.target.value)
+              setManual('')
+            }}
           >
-            <h2 className="font-display font-extrabold text-sm uppercase tracking-widest text-[#6b7a9c]">
-              Mis sectores asignados
-            </h2>
-            <ChevronDown className={`w-4 h-4 text-[#6b7a9c] transition-transform ${showSectores ? 'rotate-180' : ''}`} />
-          </button>
+            <option value="">Seleccioná sector...</option>
+            {sectores.map(s => (
+              <option key={`${s.id_sector}-${s.id_evento}`} value={`${s.id_sector}-${s.id_evento}`}>
+                {s.nombre_sector} — {s.nombre_equipo_local} vs {s.nombre_equipo_visitante}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {showSectores && (
-            <div className="px-5 pb-5 border-t border-[#1a2540]">
-              <div className="pt-4 mb-3">
-                <select className="input-field" value={eventoId ?? ''}
-                  onChange={e => setEventoId(Number(e.target.value) || null)}>
-                  <option value="">Seleccionar evento...</option>
-                  {eventos.map(ev => (
-                    <option key={ev.id} value={ev.id}>
-                      {ev.nombre_equipo_local} vs {ev.nombre_equipo_visitante}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {sectorKey && me?.dispositivo_id && (
+          <>
+            {/* Mode toggle */}
+            <div className="flex gap-1 mb-5 bg-[#090f20] p-1 rounded-xl border border-[#1a2540]">
+              <button
+                onClick={() => setMode('camera')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-display font-bold uppercase tracking-wide transition-all ${
+                  mode === 'camera' ? 'bg-[#39ff14] text-[#050914]' : 'text-[#6b7a9c]'
+                }`}
+              >
+                <Camera className="w-4 h-4" />Cámara
+              </button>
+              <button
+                onClick={() => setMode('manual')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-display font-bold uppercase tracking-wide transition-all ${
+                  mode === 'manual' ? 'bg-[#39ff14] text-[#050914]' : 'text-[#6b7a9c]'
+                }`}
+              >
+                <Keyboard className="w-4 h-4" />Manual
+              </button>
+            </div>
 
-              {eventoId && sectores.length === 0 ? (
-                <div className="py-6 text-center">
-                  <Shield className="w-8 h-8 text-[#1a2540] mx-auto mb-2" />
-                  <p className="text-[#6b7a9c] text-sm">Sin sectores asignados.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {sectores.map((s) => (
-                    <div key={s.id_sector} className="bg-[#0d1529] rounded-xl p-4 border border-[#1a2540]">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-display font-extrabold text-sm uppercase">{s.nombre_sector}</span>
-                        {s.validacion_completa
-                          ? <span className="badge-pitch flex items-center gap-1"><CheckCircle className="w-3 h-3" />Completo</span>
-                          : <span className="badge-amber">En curso</span>}
-                      </div>
-                      <div className="h-1.5 bg-[#050914] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#39ff14] rounded-full transition-all"
-                          style={{ width: `${(Number(s.validadas) / s.capacidad_maxima) * 100}%` }} />
-                      </div>
-                      <div className="text-xs text-[#6b7a9c] mt-1.5">
-                        {s.validadas} / {s.capacidad_maxima} validadas
+            {mode === 'camera' ? (
+              <div className="card card-glow overflow-hidden">
+                {/* Camera viewport */}
+                <div className="relative bg-[#000] aspect-square w-full">
+                  <div id="qr-reader" className="w-full h-full" ref={containerRef} />
+                  {/* Corner brackets overlay */}
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div className="relative w-48 h-48">
+                      {[
+                        'top-0 left-0 border-t-2 border-l-2',
+                        'top-0 right-0 border-t-2 border-r-2',
+                        'bottom-0 left-0 border-b-2 border-l-2',
+                        'bottom-0 right-0 border-b-2 border-r-2',
+                      ].map((cls, i) => (
+                        <div key={i} className={`absolute ${cls} border-[#39ff14] w-8 h-8`} />
+                      ))}
+                      {/* Scan line */}
+                      <div className="absolute inset-0 overflow-hidden rounded-sm">
+                        <div className="h-0.5 bg-[#39ff14] opacity-80 animate-[scan_2s_ease-in-out_infinite]"
+                          style={{ animationName: 'scan' }} />
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                <div className="p-4 flex items-center gap-2 text-[#6b7a9c] text-xs">
+                  <Scan className="w-3.5 h-3.5 text-[#39ff14] shrink-0" />
+                  Apuntá la cámara al código QR del asistente
+                </div>
+              </div>
+            ) : (
+              <div className="card card-glow p-5">
+                <h2 className="font-display font-extrabold text-sm uppercase tracking-widest text-[#39ff14] mb-4">
+                  Ingreso manual
+                </h2>
+                <div className="space-y-3">
+                  <input
+                    className="input-field font-mono text-sm"
+                    placeholder="Pegá o escribí el código QR"
+                    value={manual}
+                    onChange={e => setManual(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleManualSubmit}
+                    disabled={!manual.trim()}
+                    className="btn-pitch w-full flex items-center justify-center gap-2 py-3 text-base"
+                  >
+                    <Scan className="w-5 h-5" />Validar
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {!sectorKey && (
+          <div className="card p-10 text-center mt-2">
+            <Shield className="w-12 h-12 text-[#1a2540] mx-auto mb-4" />
+            <p className="text-[#6b7a9c] text-sm">Seleccioná un sector para comenzar a validar</p>
+          </div>
+        )}
       </div>
+
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(192px); }
+          100% { transform: translateY(0); }
+        }
+      `}</style>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { ValidarQRDTO } from '@repo/shared'
 import { authMiddleware } from '../middleware/auth.js'
 import { roleGuard } from '../middleware/roles.js'
 import * as qrService from '../services/qr.service.js'
+import * as dispositivoService from '../services/dispositivo.service.js'
 
 const qr = new Hono()
 
@@ -62,5 +63,13 @@ qr.get(
     return c.json(rows)
   }
 )
+
+// Funcionario: obtener su dispositivo y sectores asignados
+qr.get('/funcionario/me', authMiddleware, roleGuard('funcionario_de_validacion'), async (c) => {
+  const user = c.get('user')
+  const [dispositivo] = await dispositivoService.dispositivosDeFuncionario(user.sub)
+  const sectores = await dispositivoService.sectoresAsignadosFuncionario(user.sub)
+  return c.json({ dispositivo_id: dispositivo?.id ?? null, sectores })
+})
 
 export default qr

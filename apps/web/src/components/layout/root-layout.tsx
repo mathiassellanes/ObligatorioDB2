@@ -22,7 +22,8 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
   ] : rol === 'admin_por_pais_sede' ? [
     { to: '/admin', label: 'Admin', icon: Shield, exact: false },
   ] : rol === 'funcionario_de_validacion' ? [
-    { to: '/funcionario', label: 'Validación', icon: Scan, exact: false },
+    { to: '/funcionario', label: 'Validación', icon: Scan, exact: true },
+    { to: '/funcionario/perfil', label: 'Mi Perfil', icon: User, exact: false },
   ] : []
 
   return (

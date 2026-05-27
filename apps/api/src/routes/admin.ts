@@ -5,6 +5,7 @@ import { authMiddleware } from '../middleware/auth.js'
 import { roleGuard } from '../middleware/roles.js'
 import * as estadioService from '../services/estadio.service.js'
 import * as authService from '../services/auth.service.js'
+import * as dispositivoService from '../services/dispositivo.service.js'
 
 const admin = new Hono()
 
@@ -24,6 +25,43 @@ admin.post(
     const { id_estadio } = c.req.valid('param')
     const row = await estadioService.asignarEstadioAdmin(user.sub, id_estadio)
     return c.json(row, 201)
+  }
+)
+
+admin.get('/dispositivos', authMiddleware, roleGuard('admin_por_pais_sede'), async (c) => {
+  const rows = await dispositivoService.listarDispositivos()
+  return c.json(rows)
+})
+
+admin.post(
+  '/dispositivos',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('json', z.object({ numero_legajo: z.string().min(1) })),
+  async (c) => {
+    const { numero_legajo } = c.req.valid('json')
+    try {
+      const row = await dispositivoService.crearDispositivo(numero_legajo)
+      return c.json(row, 201)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 400)
+    }
+  }
+)
+
+admin.delete(
+  '/dispositivos/:id',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.string().uuid() })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    try {
+      const result = await dispositivoService.eliminarDispositivo(id)
+      return c.json(result)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 404)
+    }
   }
 )
 
