@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const TransferenciaSchema = z.object({
   id: z.number().int().positive(),
   fecha: z.coerce.date(),
-  estado: z.enum(['pendiente', 'aceptada', 'rechazada']),
+  estado: z.enum(['pendiente', 'aceptada', 'rechazada', 'cancelada']),
   email_origen: z.string().email(),
   email_destino: z.string().email(),
   id_entrada: z.number().int().positive(),

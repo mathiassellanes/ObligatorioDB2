@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { TransferenciaConEvento } from '@repo/shared'
 import { getEmail } from '@/lib/auth'
-import { ArrowRightLeft, CheckCircle, XCircle, Clock, Loader2, Plus, Filter } from 'lucide-react'
+import { ArrowRightLeft, CheckCircle, XCircle, Clock, Loader2, Plus, Filter, Ban } from 'lucide-react'
 import { TransferirModal } from '@/components/ui/transferir-modal'
 
 type Filtro = 'todas' | 'pendientes' | 'enviadas' | 'recibidas'
@@ -32,6 +32,14 @@ export function TransferenciasPage() {
       qc.invalidateQueries({ queryKey: ['transferencias'] })
       qc.invalidateQueries({ queryKey: ['transferencias-pendientes'] })
       qc.invalidateQueries({ queryKey: ['mis-entradas'] })
+    },
+  })
+
+  const cancelarMutation = useMutation({
+    mutationFn: (id: number) => api.post(`/transferencias/${id}/cancelar`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transferencias'] })
+      qc.invalidateQueries({ queryKey: ['transferencias-pendientes'] })
     },
   })
 
@@ -89,8 +97,9 @@ export function TransferenciasPage() {
         <div className="space-y-3">
           {filtrados.map((t) => {
             const isPendienteRecibida = t.estado === 'pendiente' && t.email_destino === myEmail
+            const isPendienteEnviada = t.estado === 'pendiente' && t.email_origen === myEmail
             return (
-              <div key={t.id} className={`card p-5 ${isPendienteRecibida ? 'border-[#ffb80030]' : ''}`}>
+              <div key={t.id} className={`card p-5 ${isPendienteRecibida ? 'border-[#ffb80030]' : isPendienteEnviada ? 'border-[#39ff1420]' : ''}`}>
                 <div className="flex items-center gap-3">
                   <ArrowRightLeft className="w-4 h-4 text-[#6b7a9c] shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -124,6 +133,21 @@ export function TransferenciasPage() {
                     </button>
                   </div>
                 )}
+
+                {isPendienteEnviada && (
+                  <div className="flex mt-4 pt-4 border-t border-[#1a2540]">
+                    <button
+                      onClick={() => cancelarMutation.mutate(t.id)}
+                      disabled={cancelarMutation.isPending}
+                      className="btn-outline flex items-center gap-1.5 py-2 px-4 text-xs text-red-400 hover:text-red-300 hover:border-red-500/40"
+                    >
+                      {cancelarMutation.isPending
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <Ban className="w-3.5 h-3.5" />}
+                      Cancelar transferencia
+                    </button>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -142,5 +166,6 @@ function StatusBadge({ estado }: { estado: string }) {
       <Clock className="w-3 h-3" />pendiente
     </span>
   )
+  if (estado === 'cancelada') return <span className="badge-red shrink-0 opacity-70">cancelada</span>
   return <span className="badge-red shrink-0">rechazada</span>
 }

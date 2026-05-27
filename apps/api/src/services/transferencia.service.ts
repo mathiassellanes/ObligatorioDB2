@@ -61,6 +61,17 @@ export async function responder(id: number, email_destino: string, accion: 'acep
   return { ok: true, accion }
 }
 
+export async function cancelar(id: number, email_origen: string) {
+  const [transf] = await sql`
+    SELECT * FROM transferencia WHERE id = ${id} AND estado = 'pendiente'
+  `
+  if (!transf) throw new Error('Transferencia no encontrada o ya procesada')
+  if (transf.email_origen !== email_origen) throw new Error('Sin permisos para cancelar esta transferencia')
+
+  await sql`UPDATE transferencia SET estado = 'cancelada' WHERE id = ${id}`
+  return { ok: true }
+}
+
 export async function historial(email: string) {
   return sql`
     SELECT t.*,

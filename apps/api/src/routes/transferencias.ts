@@ -44,6 +44,23 @@ transferencias.post(
   }
 )
 
+transferencias.post(
+  '/:id/cancelar',
+  authMiddleware,
+  roleGuard('usuario_general'),
+  zValidator('param', z.object({ id: z.coerce.number() })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    const user = c.get('user')
+    try {
+      const result = await transferenciaService.cancelar(id, user.sub)
+      return c.json(result)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 400)
+    }
+  }
+)
+
 transferencias.get('/', authMiddleware, roleGuard('usuario_general'), async (c) => {
   const user = c.get('user')
   const rows = await transferenciaService.historial(user.sub)
