@@ -29,6 +29,7 @@ import { AdminEventoDetailPage } from '@/pages/admin/eventos/detail'
 import { AdminEquiposPage } from '@/pages/admin/equipos'
 import { AdminEquipoDetailPage } from '@/pages/admin/equipos/detail'
 import { AdminReportesPage } from '@/pages/admin/reportes'
+import { AdminFuncionariosPage } from '@/pages/admin/funcionarios'
 
 // Root
 const rootRoute = createRootRoute({
@@ -102,6 +103,11 @@ const adminReportesRoute = createRoute({
   path: '/reportes',
   component: AdminReportesPage,
 })
+const adminFuncionariosRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/funcionarios',
+  component: AdminFuncionariosPage,
+})
 
 
 // User layout (guard: must be logged in as usuario_general)
@@ -154,6 +160,7 @@ const routeTree = rootRoute.addChildren([
     adminEquiposRoute,
     adminEquipoDetailRoute,
     adminReportesRoute,
+    adminFuncionariosRoute,
   ]),
 ])
 

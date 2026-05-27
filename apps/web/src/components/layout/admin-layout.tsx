@@ -11,6 +11,7 @@ import { logout } from '@/lib/auth'
 const NAV = [
   { to: '/admin/eventos', icon: Calendar, label: 'Eventos' },
   { to: '/admin/equipos', icon: Users, label: 'Equipos' },
+  { to: '/admin/funcionarios', icon: Shield, label: 'Funcionarios' },
   { to: '/admin/reportes', icon: BarChart3, label: 'Reportes' },
 ] as const
 

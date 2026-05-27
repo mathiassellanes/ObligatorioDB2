@@ -117,3 +117,40 @@ export async function updatePerfil(email: string, data: {
   if (!row) throw new Error('Perfil no encontrado')
   return row
 }
+
+export async function crearFuncionario(data: {
+  email: string; password: string; numero_legajo: string
+  documento_pais: string; documento_tipo: string; documento_numero: string
+  dir_pais: string; dir_localidad: string; dir_calle: string
+  dir_numero: string; dir_codigo_postal: string
+}) {
+  const { email, password, numero_legajo, ...perfil } = data
+
+  const existingEmail = await sql`SELECT email FROM perfil WHERE email = ${email}`
+  if (existingEmail.length > 0) throw new Error('El email ya está registrado')
+
+  const existingLegajo = await sql`SELECT numero_legajo FROM funcionario_de_validacion WHERE numero_legajo = ${numero_legajo}`
+  if (existingLegajo.length > 0) throw new Error('El número de legajo ya está en uso')
+
+  await sql.begin(async (tx) => {
+    await tx`
+      INSERT INTO perfil (email, documento_pais, documento_tipo, documento_numero,
+        dir_pais, dir_localidad, dir_calle, dir_numero, dir_codigo_postal)
+      VALUES (${email}, ${perfil.documento_pais}, ${perfil.documento_tipo}, ${perfil.documento_numero},
+        ${perfil.dir_pais}, ${perfil.dir_localidad}, ${perfil.dir_calle}, ${perfil.dir_numero}, ${perfil.dir_codigo_postal})
+    `
+    await tx`INSERT INTO credenciales (email, password_hash) VALUES (${email}, ${hashPassword(password)})`
+    await tx`INSERT INTO funcionario_de_validacion (numero_legajo, email) VALUES (${numero_legajo}, ${email})`
+  })
+
+  return { email, numero_legajo }
+}
+
+export async function listarFuncionarios() {
+  return sql`
+    SELECT f.numero_legajo, f.email, p.documento_pais, p.documento_numero
+    FROM funcionario_de_validacion f
+    JOIN perfil p ON p.email = f.email
+    ORDER BY f.numero_legajo
+  `
+}
