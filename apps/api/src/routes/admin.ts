@@ -37,11 +37,14 @@ admin.post(
   '/dispositivos',
   authMiddleware,
   roleGuard('admin_por_pais_sede'),
-  zValidator('json', z.object({ numero_legajo: z.string().min(1) })),
+  zValidator('json', z.object({
+    numero_legajo: z.string().min(1),
+    id_evento: z.number().int().positive(),
+  })),
   async (c) => {
-    const { numero_legajo } = c.req.valid('json')
+    const { numero_legajo, id_evento } = c.req.valid('json')
     try {
-      const row = await dispositivoService.crearDispositivo(numero_legajo)
+      const row = await dispositivoService.crearDispositivo(numero_legajo, id_evento)
       return c.json(row, 201)
     } catch (err) {
       return c.json({ error: (err as Error).message }, 400)

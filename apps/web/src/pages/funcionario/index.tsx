@@ -13,10 +13,10 @@ type SectorAsignado = {
   nombre_equipo_visitante: string
   fecha_evento: string
   validacion_completa: boolean
+  dispositivo_id: string | null
 }
 
 type FuncionarioMe = {
-  dispositivo_id: string | null
   sectores: SectorAsignado[]
 }
 
@@ -36,6 +36,7 @@ export function FuncionarioPage() {
 
   const sectores = me?.sectores ?? []
   const selectedSector = sectores.find(s => `${s.id_sector}-${s.id_evento}` === sectorKey)
+  const dispositivoId = selectedSector?.dispositivo_id ?? null
 
   // Start/stop camera scanner
   useEffect(() => {
@@ -64,12 +65,12 @@ export function FuncionarioPage() {
   }, [mode, sectorKey])
 
   function navigate(codigo: string) {
-    if (!me?.dispositivo_id || !selectedSector) return
+    if (!dispositivoId || !selectedSector) return
     router.navigate({
       to: '/funcionario/resultado',
       search: {
         codigo,
-        dispositivo: me.dispositivo_id,
+        dispositivo: dispositivoId,
         sector: selectedSector.id_sector,
         evento: selectedSector.id_evento,
       }
@@ -90,11 +91,11 @@ export function FuncionarioPage() {
     <div className="min-h-[calc(100vh-64px)] bg-[#050914]">
       <div className="max-w-md mx-auto px-4 py-6">
 
-        {/* No device warning */}
-        {!me?.dispositivo_id && (
+        {/* No device warning for selected sector */}
+        {sectorKey && !dispositivoId && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-5 flex items-start gap-3">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-amber-400 text-sm">Sin dispositivo asignado. Contactá al administrador.</p>
+            <p className="text-amber-400 text-sm">Sin dispositivo asignado para este evento. Contactá al administrador.</p>
           </div>
         )}
 
@@ -118,7 +119,7 @@ export function FuncionarioPage() {
           </select>
         </div>
 
-        {sectorKey && me?.dispositivo_id && (
+        {sectorKey && dispositivoId && (
           <>
             {/* Mode toggle */}
             <div className="flex gap-1 mb-5 bg-[#090f20] p-1 rounded-xl border border-[#1a2540]">

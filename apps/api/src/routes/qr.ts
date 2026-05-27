@@ -64,12 +64,11 @@ qr.get(
   }
 )
 
-// Funcionario: obtener su dispositivo y sectores asignados
+// Funcionario: obtener sectores asignados con dispositivo por evento
 qr.get('/funcionario/me', authMiddleware, roleGuard('funcionario_de_validacion'), async (c) => {
   const user = c.get('user')
-  const [dispositivo] = await dispositivoService.dispositivosDeFuncionario(user.sub)
   const sectores = await dispositivoService.sectoresAsignadosFuncionario(user.sub)
-  return c.json({ dispositivo_id: dispositivo?.id ?? null, sectores })
+  return c.json({ sectores })
 })
 
 export default qr
