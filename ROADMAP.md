@@ -5,29 +5,30 @@ Stack: pnpm monorepo · Hono · postgres.js · React · Vite · TanStack Router 
 
 ---
 
-## Fase 0 — Scaffolding del monorepo
-- [ ] Init pnpm workspaces
-- [ ] `tsconfig.base.json`
-- [ ] `packages/shared` vacío con package.json
-- [ ] `apps/api` vacío con package.json
-- [ ] `apps/web` vacío con package.json
-- [ ] `.gitignore` raíz
+## Fase 0 — Scaffolding del monorepo ✅
+- [x] Init pnpm workspaces
+- [x] `tsconfig.base.json`
+- [x] `packages/shared` vacío con package.json
+- [x] `apps/api` vacío con package.json
+- [x] `apps/web` vacío con package.json
+- [x] `.gitignore` raíz
 
-## Fase 1 — Shared: Zod schemas
-- [ ] Schema Perfil, Telefono
-- [ ] Schema roles: admin_por_pais_sede, funcionario_de_validacion, usuario_general
-- [ ] Schema Equipo, Estadio, Sector, Evento
-- [ ] Schema Sector_Evento
-- [ ] Schema Comision, Venta, Entrada
-- [ ] Schema QR, Transferencia
-- [ ] Schema asignado_a, gestiona, Dispositivo
-- [ ] DTOs de request/response exportados
+## Fase 1 — Shared: Zod schemas ✅
+- [x] Schema Perfil, Telefono
+- [x] Schema roles: admin_por_pais_sede, funcionario_de_validacion, usuario_general
+- [x] Schema Equipo, Estadio, Sector, Evento
+- [x] Schema Sector_Evento
+- [x] Schema Comision, Venta, Entrada
+- [x] Schema QR, Transferencia
+- [x] Schema asignado_a, gestiona, Dispositivo
+- [x] DTOs de request/response exportados
 
-## Fase 2 — DB: Migrations SQL
-- [ ] `001_init.sql` con todas las tablas y constraints
-- [ ] `client.ts` instancia postgres.js
-- [ ] Script `migrate.ts` para correr migrations
-- [ ] Seed básico (equipos, estadios, admin)
+## Fase 2 — DB: Migrations SQL ✅
+- [x] `001_init.sql` con todas las tablas y constraints
+- [x] `002_triggers.sql` — triggers de negocio (superposición, caps, límites)
+- [x] `003_seed.sql` — equipos, estadios, comisión base
+- [x] `client.ts` instancia postgres.js
+- [x] Script `migrate.ts` para correr migrations
 
 ## Fase 3 — Auth
 - [ ] POST /auth/register
