@@ -1,14 +1,18 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { api } from '@/api/client'
 import type { EntradaConEvento } from '@repo/shared'
 import { Ticket, QrCode, ArrowRightLeft, MapPin, CheckCircle2 } from 'lucide-react'
+import { TransferirModal } from '@/components/ui/transferir-modal'
 
 export function EntradasPage() {
   const { data: entradas = [], isLoading } = useQuery<EntradaConEvento[]>({
     queryKey: ['mis-entradas'],
     queryFn: () => api.get('/entradas'),
   })
+
+  const [modalEntrada, setModalEntrada] = useState<EntradaConEvento | null>(null)
 
   const activas = entradas.filter(e => !e.consumida)
   const usadas = entradas.filter(e => e.consumida)
@@ -20,7 +24,7 @@ export function EntradasPage() {
   )
 
   return (
-    <div>
+    <>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="section-title">Mis Entradas</h1>
@@ -46,7 +50,9 @@ export function EntradasPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#39ff14] inline-block" />Activas · {activas.length}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activas.map(e => <EntradaCard key={e.id} entrada={e} />)}
+                {activas.map(e => (
+                  <EntradaCard key={e.id} entrada={e} onTransferir={() => setModalEntrada(e)} />
+                ))}
               </div>
             </section>
           )}
@@ -63,11 +69,19 @@ export function EntradasPage() {
           )}
         </>
       )}
-    </div>
+
+      <TransferirModal
+        open={!!modalEntrada}
+        onClose={() => setModalEntrada(null)}
+        entradaPreseleccionada={modalEntrada ?? undefined}
+      />
+    </>
   )
 }
 
-function EntradaCard({ entrada, used = false }: { entrada: EntradaConEvento; used?: boolean }) {
+function EntradaCard({
+  entrada, used = false, onTransferir,
+}: { entrada: EntradaConEvento; used?: boolean; onTransferir?: () => void }) {
   const fecha = new Date(entrada.fecha_evento)
   return (
     <div className={`card p-5 ${used ? 'border-[#1a2540]' : 'card-glow'}`}>
@@ -114,10 +128,12 @@ function EntradaCard({ entrada, used = false }: { entrada: EntradaConEvento; use
             className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-xs flex-1 justify-center">
             <QrCode className="w-3.5 h-3.5" />Ver QR
           </Link>
-          <Link to="/u/transferencias"
-            className="btn-outline flex items-center gap-1.5 py-2 px-4 text-xs flex-1 justify-center">
+          <button
+            onClick={onTransferir}
+            className="btn-outline flex items-center gap-1.5 py-2 px-4 text-xs flex-1 justify-center"
+          >
             <ArrowRightLeft className="w-3.5 h-3.5" />Transferir
-          </Link>
+          </button>
         </div>
       )}
     </div>
