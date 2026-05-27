@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { api } from '@/api/client'
 import type { EventoConNombres } from '@repo/shared'
 import { Calendar, MapPin, Zap, ChevronRight } from 'lucide-react'
+import { isLoggedIn } from '@/lib/auth'
 
 export function HomePage() {
   const { data: eventos, isLoading } = useQuery<EventoConNombres[]>({
@@ -12,29 +13,36 @@ export function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
-      {/* Hero */}
-      <div className="relative mb-16 stadium-bg rounded-2xl overflow-hidden border border-[#1a2540] p-10 md:p-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#050914] via-[#090f20] to-[#050914]" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#39ff14] opacity-[0.03] rounded-full blur-3xl" />
-        <div className="relative">
-          <div className="badge-pitch inline-flex items-center gap-1.5 mb-4">
-            <Zap className="w-3 h-3" />
-            FIFA World Cup 2026
+      {/* Hero — solo para visitantes */}
+      {!isLoggedIn() && (
+        <div className="relative mb-16 stadium-bg rounded-2xl overflow-hidden border border-[#1a2540] p-10 md:p-16">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#050914] via-[#090f20] to-[#050914]" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#39ff14] opacity-[0.03] rounded-full blur-3xl" />
+          <div className="relative">
+            <div className="badge-pitch inline-flex items-center gap-1.5 mb-4">
+              <Zap className="w-3 h-3" />
+              FIFA World Cup 2026
+            </div>
+            <h1 className="font-display font-black text-6xl md:text-8xl uppercase tracking-tight text-[#e8edf8] leading-none mb-4">
+              Conseguí tu<br />
+              <span className="text-[#39ff14]">entrada</span>
+            </h1>
+            <p className="text-[#6b7a9c] text-lg max-w-lg mb-8 font-body">
+              Sistema oficial de ticketing dinámico. QR rotativo, transferencias seguras,
+              validación en puerta.
+            </p>
+            <div className="flex items-center gap-3">
+              <Link to="/register" className="btn-pitch inline-flex items-center gap-2">
+                Registrarse gratis
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              <Link to="/login" className="btn-outline inline-flex items-center gap-2 py-2.5 px-5">
+                Ingresar
+              </Link>
+            </div>
           </div>
-          <h1 className="font-display font-black text-6xl md:text-8xl uppercase tracking-tight text-[#e8edf8] leading-none mb-4">
-            Conseguí tu<br />
-            <span className="text-[#39ff14]">entrada</span>
-          </h1>
-          <p className="text-[#6b7a9c] text-lg max-w-lg mb-8 font-body">
-            Sistema oficial de ticketing dinámico. QR rotativo, transferencias seguras,
-            validación en puerta.
-          </p>
-          <Link to="/register" className="btn-pitch inline-flex items-center gap-2">
-            Registrarse gratis
-            <ChevronRight className="w-4 h-4" />
-          </Link>
         </div>
-      </div>
+      )}
 
       {/* Eventos */}
       <div>
