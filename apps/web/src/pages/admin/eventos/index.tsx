@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { EventoConNombres, Estadio, Equipo, CreateEventoDTO } from '@repo/shared'
 import { Calendar, Plus, ChevronRight, Loader2, MapPin } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 export function AdminEventosPage() {
   const qc = useQueryClient()
@@ -32,20 +33,25 @@ export function AdminEventosPage() {
     },
   })
 
+  const valid =
+    form.fecha.trim() !== '' && form.hora.trim() !== '' &&
+    form.id_estadio > 0 && form.id_equipo_local > 0 && form.id_equipo_visitante > 0
+
   const upcoming = eventos.filter(e => new Date(e.fecha) >= new Date())
   const past = eventos.filter(e => new Date(e.fecha) < new Date())
 
   return (
     <div className="p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title text-3xl">Eventos</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{eventos.length} eventos en total</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nuevo evento
-        </button>
-      </div>
+      <PageHeader
+        title="Eventos"
+        subtitle={`${eventos.length} eventos en total`}
+        icon={Calendar}
+        action={
+          <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nuevo evento
+          </button>
+        }
+      />
 
       {showForm && (
         <div className="card card-glow p-6 mb-6">
@@ -82,8 +88,8 @@ export function AdminEventosPage() {
             </div>
           )}
           <button onClick={() => crearMutation.mutate(form as unknown as CreateEventoDTO)}
-            disabled={crearMutation.isPending || !form.fecha || !form.hora || !form.id_estadio || !form.id_equipo_local || !form.id_equipo_visitante}
-            className="btn-pitch mt-4 flex items-center gap-2 py-2">
+            disabled={!valid || crearMutation.isPending}
+            className="btn-pitch mt-4 flex items-center gap-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {crearMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Crear evento
           </button>

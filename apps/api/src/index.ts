@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { attachRealtime } from './lib/realtime.js'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import authRoutes from './routes/auth.js'
@@ -32,6 +33,8 @@ app.route('/reportes', reportesRoutes)
 
 const port = Number(process.env['PORT'] ?? 3000)
 
-serve({ fetch: app.fetch, port }, () => {
+const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`API running on http://localhost:${port}`)
 })
+
+attachRealtime(server as unknown as import('node:http').Server)

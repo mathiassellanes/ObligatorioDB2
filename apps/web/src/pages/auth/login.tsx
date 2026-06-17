@@ -12,6 +12,8 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const valid = /\S+@\S+\.\S+/.test(email) && password.length > 0
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -21,7 +23,7 @@ export function LoginPage() {
       saveAuth(res.token, res.rol, email)
       if (res.rol === 'admin_por_pais_sede') router.navigate({ to: '/admin' })
       else if (res.rol === 'funcionario_de_validacion') router.navigate({ to: '/funcionario' })
-      else router.navigate({ to: '/dashboard' })
+      else router.navigate({ to: '/' })
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -87,7 +89,8 @@ export function LoginPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-pitch w-full flex items-center justify-center gap-2">
+            <button type="submit" disabled={!valid || loading}
+              className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>

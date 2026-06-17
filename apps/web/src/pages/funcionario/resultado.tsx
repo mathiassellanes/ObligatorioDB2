@@ -15,6 +15,9 @@ export function FuncionarioResultadoPage() {
     }),
   })
 
+  // The backend treats a re-validation by the same device as success
+  // (idempotent), so StrictMode's double-invoke is harmless — no guard needed,
+  // and the live mutation observer always settles to Válido/Inválido.
   useEffect(() => {
     validarMutation.mutate()
   }, [])

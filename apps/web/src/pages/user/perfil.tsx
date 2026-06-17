@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { User, Save, Loader2, CheckCircle, Phone, MapPin, FileText } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Perfil = {
   email: string
@@ -46,17 +47,11 @@ export function PerfilPage() {
 
   if (!perfil) return null
 
+  const valid = Object.values(form).every(v => v.trim() !== '')
+
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-[#39ff14]/10 rounded-xl flex items-center justify-center border border-[#39ff14]/20">
-          <User className="w-5 h-5 text-[#39ff14]" />
-        </div>
-        <div>
-          <h1 className="section-title text-2xl">Mi Perfil</h1>
-          <p className="text-[#6b7a9c] text-sm font-mono">{perfil.email}</p>
-        </div>
-      </div>
+      <PageHeader title="Mi Perfil" subtitle={perfil.email} icon={User} />
 
       {/* Read-only: documento */}
       <div className="card p-5 mb-4">
@@ -144,8 +139,8 @@ export function PerfilPage() {
 
           <button
             onClick={() => updateMutation.mutate(form)}
-            disabled={updateMutation.isPending}
-            className="btn-pitch flex items-center gap-2"
+            disabled={!valid || updateMutation.isPending}
+            className="btn-pitch flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Guardar cambios

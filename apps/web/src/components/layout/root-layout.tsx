@@ -1,21 +1,22 @@
-import { Link, useRouter } from '@tanstack/react-router'
-import { isLoggedIn, getRol, logout } from '@/lib/auth'
-import { Ticket, LogOut, ArrowRightLeft, Shield, Scan, Calendar, User, Menu, X } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { useAuth } from '@/lib/auth'
+import { useLogout } from '@/hooks/use-logout'
+import { Ticket, LogOut, ArrowRightLeft, Shield, Scan, Calendar, User, Menu, X, Home } from 'lucide-react'
 import { useState } from 'react'
 
 export function RootLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const loggedIn = isLoggedIn()
-  const rol = getRol()
+  const { loggedIn, rol } = useAuth()
+  const logout = useLogout()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   function handleLogout() {
+    setMobileOpen(false)
     logout()
-    router.navigate({ to: '/login' })
   }
 
   const userNavLinks = rol === 'usuario_general' ? [
-    { to: '/', label: 'Eventos', icon: Calendar, exact: true },
+    { to: '/', label: 'Inicio', icon: Home, exact: true },
+    { to: '/eventos', label: 'Eventos', icon: Calendar, exact: true },
     { to: '/u/entradas', label: 'Mis Entradas', icon: Ticket },
     { to: '/u/transferencias', label: 'Transferencias', icon: ArrowRightLeft },
     { to: '/u/perfil', label: 'Mi Perfil', icon: User },

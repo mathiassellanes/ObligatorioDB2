@@ -5,6 +5,7 @@ import type { TransferenciaConEvento } from '@repo/shared'
 import { getEmail } from '@/lib/auth'
 import { ArrowRightLeft, CheckCircle, XCircle, Clock, Loader2, Plus, Filter, Ban } from 'lucide-react'
 import { TransferirModal } from '@/components/ui/transferir-modal'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Filtro = 'todas' | 'pendientes' | 'enviadas' | 'recibidas'
 
@@ -60,15 +61,16 @@ export function TransferenciasPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="section-title">Transferencias</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{historial.length} en total</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nueva transferencia
-        </button>
-      </div>
+      <PageHeader
+        title="Transferencias"
+        subtitle={`${historial.length} en total`}
+        icon={ArrowRightLeft}
+        action={
+          <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nueva transferencia
+          </button>
+        }
+      />
 
       {/* Filtros */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">

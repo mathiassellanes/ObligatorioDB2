@@ -103,8 +103,8 @@ export function AdminEstadioDetailPage() {
               <button onClick={() => crearSectorMutation.mutate({
                 nombre: sectorForm.nombre,
                 capacidad_maxima: Number(sectorForm.capacidad_maxima)
-              })} disabled={!sectorForm.nombre || !sectorForm.capacidad_maxima || crearSectorMutation.isPending}
-                className="btn-pitch w-full py-1.5 text-xs flex items-center justify-center gap-1.5">
+              })} disabled={sectorForm.nombre.trim() === '' || Number(sectorForm.capacidad_maxima) <= 0 || crearSectorMutation.isPending}
+                className="btn-pitch w-full py-1.5 text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
                 {crearSectorMutation.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
                 Crear sector
               </button>

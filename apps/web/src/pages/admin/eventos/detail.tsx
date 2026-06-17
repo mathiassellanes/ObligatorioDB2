@@ -78,6 +78,11 @@ export function AdminEventoDetailPage() {
     s => !evento.sectores?.find(se => se.id === s.id)
   )
 
+  const habilitarValid =
+    sectoresForm.length > 0 &&
+    sectoresForm.every(f => f.costo_entrada.trim() !== '' && Number(f.costo_entrada) > 0)
+  const asignarValid = asignarForm.id_sector > 0 && asignarForm.numero_legajo.trim() !== ''
+
   return (
     <div className="p-8 max-w-5xl">
       {/* Header */}
@@ -137,8 +142,8 @@ export function AdminEventoDetailPage() {
                 onClick={() => habilitarMutation.mutate({
                   sectores: sectoresForm.map(f => ({ id_sector: f.id_sector, costo_entrada: Number(f.costo_entrada) }))
                 })}
-                disabled={sectoresForm.length === 0 || sectoresForm.some(f => !f.costo_entrada) || habilitarMutation.isPending}
-                className="btn-pitch w-full py-1.5 text-xs flex items-center justify-center gap-1.5 mt-2">
+                disabled={!habilitarValid || habilitarMutation.isPending}
+                className="btn-pitch w-full py-1.5 text-xs flex items-center justify-center gap-1.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 {habilitarMutation.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
                 Guardar
               </button>
@@ -204,8 +209,8 @@ export function AdminEventoDetailPage() {
               )}
               <button
                 onClick={() => asignarMutation.mutate(asignarForm)}
-                disabled={!asignarForm.id_sector || !asignarForm.numero_legajo || asignarMutation.isPending}
-                className="btn-pitch w-full flex items-center justify-center gap-2 py-2">
+                disabled={!asignarValid || asignarMutation.isPending}
+                className="btn-pitch w-full flex items-center justify-center gap-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 {asignarMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 Asignar
               </button>

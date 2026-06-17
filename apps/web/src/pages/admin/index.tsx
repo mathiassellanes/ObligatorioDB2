@@ -3,21 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { Estadio, Equipo, EventoConNombres, CreateEventoDTO } from '@repo/shared'
 import { Shield, Plus, Building2, Users, Calendar, BarChart3, Loader2, TrendingUp } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 export function AdminPage() {
   const [tab, setTab] = useState<'eventos' | 'estadios' | 'reportes'>('eventos')
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-[#39ff14]/10 rounded-xl flex items-center justify-center border border-[#39ff14]/20">
-          <Shield className="w-5 h-5 text-[#39ff14]" />
-        </div>
-        <div>
-          <h1 className="section-title text-3xl">Panel Admin</h1>
-          <p className="text-[#6b7a9c] text-sm">Gestión de infraestructura y eventos</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Panel Admin"
+        subtitle="Gestión de infraestructura y eventos"
+        icon={Shield}
+      />
 
       <div className="flex gap-1 mb-6 bg-[#090f20] p-1 rounded-xl border border-[#1a2540]">
         {([['eventos', 'Eventos', Calendar], ['estadios', 'Estadios', Building2], ['reportes', 'Reportes', BarChart3]] as const).map(([key, label, Icon]) => (
@@ -54,6 +51,10 @@ function EventosTab() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['eventos'] }); setShow(false) },
   })
 
+  const valid =
+    form.fecha.trim() !== '' && form.hora.trim() !== '' &&
+    form.id_estadio > 0 && form.id_equipo_local > 0 && form.id_equipo_visitante > 0
+
   return (
     <div>
       <div className="flex justify-between mb-4">
@@ -89,8 +90,8 @@ function EventosTab() {
           </div>
           {crearMutation.isError && <p className="text-red-400 text-xs mt-3">{(crearMutation.error as Error).message}</p>}
           <button onClick={() => crearMutation.mutate(form as unknown as CreateEventoDTO)}
-            disabled={crearMutation.isPending}
-            className="btn-pitch mt-4 flex items-center gap-2 py-2">
+            disabled={!valid || crearMutation.isPending}
+            className="btn-pitch mt-4 flex items-center gap-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {crearMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Crear evento
           </button>

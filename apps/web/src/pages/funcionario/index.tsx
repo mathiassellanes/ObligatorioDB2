@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import { Html5Qrcode } from 'html5-qrcode'
+import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
 import { Camera, Keyboard, Scan, Shield, Loader2, AlertTriangle } from 'lucide-react'
 
 type SectorAsignado = {
@@ -20,10 +20,34 @@ type FuncionarioMe = {
   sectores: SectorAsignado[]
 }
 
+// El sector de validación se mantiene durante el evento: una vez elegido, se
+// guarda hasta el fin del día o por 5 horas (lo que ocurra primero), así el
+// funcionario no tiene que re-seleccionarlo en cada validación.
+const SECTOR_KEY = 'mt_func_sector'
+
+function loadStoredSector(): string {
+  try {
+    const raw = localStorage.getItem(SECTOR_KEY)
+    if (!raw) return ''
+    const { key, exp } = JSON.parse(raw)
+    if (typeof exp === 'number' && exp > Date.now()) return key
+    localStorage.removeItem(SECTOR_KEY)
+  } catch { /* corrupt value */ }
+  return ''
+}
+
+function persistSector(key: string) {
+  if (!key) { localStorage.removeItem(SECTOR_KEY); return }
+  const endOfDay = new Date()
+  endOfDay.setHours(23, 59, 59, 999)
+  const exp = Math.min(endOfDay.getTime(), Date.now() + 5 * 60 * 60 * 1000)
+  localStorage.setItem(SECTOR_KEY, JSON.stringify({ key, exp }))
+}
+
 export function FuncionarioPage() {
   const router = useRouter()
   const [mode, setMode] = useState<'camera' | 'manual'>('camera')
-  const [sectorKey, setSectorKey] = useState('')
+  const [sectorKey, setSectorKey] = useState(loadStoredSector)
   const [manual, setManual] = useState('')
   const [scanning, setScanning] = useState(false)
   const scannerRef = useRef<Html5Qrcode | null>(null)
@@ -38,31 +62,67 @@ export function FuncionarioPage() {
   const selectedSector = sectores.find(s => `${s.id_sector}-${s.id_evento}` === sectorKey)
   const dispositivoId = selectedSector?.dispositivo_id ?? null
 
-  // Start/stop camera scanner
+  function selectSector(key: string) {
+    setSectorKey(key)
+    setManual('')
+    persistSector(key)
+  }
+
+  // Si el sector guardado ya no está entre los asignados (evento terminó, etc.),
+  // limpiar la selección persistida.
   useEffect(() => {
-    if (mode !== 'camera' || !sectorKey) return
+    if (sectorKey && me && !selectedSector) {
+      setSectorKey('')
+      persistSector('')
+    }
+  }, [me, sectorKey, selectedSector])
+
+  // Start/stop camera scanner.
+  // stop() throws synchronously if the scanner isn't actively scanning, and
+  // start() is async — under StrictMode the effect mounts, cleans up, and
+  // remounts before start() resolves, so a naive cleanup stop() crashes with
+  // "Cannot stop, scanner is not running". Gate stop() on the live state and
+  // wait for start() to settle before tearing down.
+  useEffect(() => {
+    // El <div id="qr-reader"> solo se renderiza cuando hay sector + dispositivo.
+    // Con un sector persistido el effect puede dispararse antes de que cargue
+    // `me` (dispositivoId todavía null), cuando el div aún no existe → no
+    // arrancar el scanner hasta que el viewport esté en el DOM.
+    if (mode !== 'camera' || !sectorKey || !dispositivoId) return
+    if (!document.getElementById('qr-reader')) return
 
     const qr = new Html5Qrcode('qr-reader')
     scannerRef.current = qr
 
-    qr.start(
+    async function stopSafe() {
+      try {
+        const s = qr.getState()
+        if (s === Html5QrcodeScannerState.SCANNING || s === Html5QrcodeScannerState.PAUSED) {
+          await qr.stop()
+        }
+      } catch { /* not running — nothing to stop */ }
+    }
+
+    const started = qr.start(
       { facingMode: 'environment' },
       { fps: 10, qrbox: { width: 240, height: 240 } },
       (decodedText) => {
-        qr.stop().then(() => {
+        stopSafe().then(() => {
           scannerRef.current = null
           navigate(decodedText)
         })
       },
-      () => { /* ignore errors while scanning */ }
-    ).catch(() => {
+      () => { /* ignore per-frame decode errors */ }
+    ).then(() => true).catch(() => {
       setMode('manual')
+      return false
     })
 
     return () => {
-      qr.stop().catch(() => {})
+      // Only stop once start() has settled, and only if it actually started.
+      started.then((ok) => { if (ok) stopSafe() })
     }
-  }, [mode, sectorKey])
+  }, [mode, sectorKey, dispositivoId])
 
   function navigate(codigo: string) {
     if (!dispositivoId || !selectedSector) return
@@ -105,10 +165,7 @@ export function FuncionarioPage() {
           <select
             className="input-field text-base"
             value={sectorKey}
-            onChange={e => {
-              setSectorKey(e.target.value)
-              setManual('')
-            }}
+            onChange={e => selectSector(e.target.value)}
           >
             <option value="">Seleccioná sector...</option>
             {sectores.map(s => (
@@ -211,6 +268,18 @@ export function FuncionarioPage() {
           50% { transform: translateY(192px); }
           100% { transform: translateY(0); }
         }
+        /* html5-qrcode dibuja su propio "shaded region" con brackets blancos
+           (el cuadrado blanco). Lo ocultamos: ya tenemos overlay verde propio.
+           El video se fuerza a cubrir todo el viewport. */
+        #qr-reader { border: 0 !important; background: #000 !important; }
+        #qr-reader video {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          display: block !important;
+        }
+        #qr-reader #qr-shaded-region { display: none !important; }
+        #qr-reader #qr-canvas { display: none !important; }
       `}</style>
     </div>
   )

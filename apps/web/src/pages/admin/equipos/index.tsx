@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { Equipo } from '@repo/shared'
 import { Users, Plus, ChevronRight, Loader2, Flag } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 // Flag emojis for known teams
 const TEAM_FLAGS: Record<string, string> = {
@@ -33,15 +34,16 @@ export function AdminEquiposPage() {
 
   return (
     <div className="p-8 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title text-3xl">Equipos</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{equipos.length} equipos registrados</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nuevo equipo
-        </button>
-      </div>
+      <PageHeader
+        title="Equipos"
+        subtitle={`${equipos.length} equipos registrados`}
+        icon={Users}
+        action={
+          <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nuevo equipo
+          </button>
+        }
+      />
 
       {showForm && (
         <div className="card card-glow p-5 mb-6">
@@ -50,8 +52,8 @@ export function AdminEquiposPage() {
             <input className="input-field flex-1" placeholder="Nombre del equipo..."
               value={nombre} onChange={e => setNombre(e.target.value)} />
             <button onClick={() => crearMutation.mutate({ nombre })}
-              disabled={!nombre || crearMutation.isPending}
-              className="btn-pitch flex items-center gap-2 px-5">
+              disabled={nombre.trim() === '' || crearMutation.isPending}
+              className="btn-pitch flex items-center gap-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed">
               {crearMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Crear
             </button>

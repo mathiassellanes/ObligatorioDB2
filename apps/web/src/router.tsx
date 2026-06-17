@@ -8,12 +8,13 @@ import {
 import { RootLayout } from '@/components/layout/root-layout'
 import { AdminLayout } from '@/components/layout/admin-layout'
 import { UserLayout } from '@/components/layout/user-layout'
-import { isLoggedIn, getRol } from '@/lib/auth'
+import { isLoggedIn, getRol, useAuth } from '@/lib/auth'
 
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/auth/login'
 import { RegisterPage } from '@/pages/auth/register'
 import { EventoDetailPage } from '@/pages/eventos/detail'
+import { EventosListPage } from '@/pages/eventos'
 import { DashboardPage } from '@/pages/dashboard'
 import { ComprasPage } from '@/pages/dashboard/compras'
 import { QRPage } from '@/pages/dashboard/qr'
@@ -42,15 +43,34 @@ const rootRoute = createRootRoute({
   ),
 })
 
+// A validation officer's app is only the scanner + their profile. Keep them
+// out of the public/buyer-facing pages by bouncing them to /funcionario.
+// (Admins are intentionally allowed to browse the public site — their sidebar
+// has a "Ver Sitio" link.)
+function blockFuncionario() {
+  if (getRol() === 'funcionario_de_validacion') {
+    throw redirect({ to: '/funcionario' })
+  }
+}
+
+// At "/", a logged-in buyer sees their dashboard; everyone else (logged-out,
+// admins browsing the public site) sees the landing page.
+function HomeOrDashboard() {
+  const { loggedIn, rol } = useAuth()
+  return loggedIn && rol === 'usuario_general' ? <DashboardPage /> : <HomePage />
+}
+
 // Public routes
-const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage })
+const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomeOrDashboard, beforeLoad: blockFuncionario })
 const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage })
 const registerRoute = createRoute({ getParentRoute: () => rootRoute, path: '/register', component: RegisterPage })
-const eventoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/eventos/$id', component: EventoDetailPage })
-const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/dashboard', component: DashboardPage })
-const comprasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/compras', component: ComprasPage })
-const transferenciasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/transferencias', component: TransferenciasPage })
-const qrRoute = createRoute({ getParentRoute: () => rootRoute, path: '/qr/$id', component: QRPage })
+const eventosListRoute = createRoute({ getParentRoute: () => rootRoute, path: '/eventos', component: EventosListPage, beforeLoad: blockFuncionario })
+const eventoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/eventos/$id', component: EventoDetailPage, beforeLoad: blockFuncionario })
+// Legacy path — dashboard now lives at "/".
+const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/dashboard', beforeLoad: () => { throw redirect({ to: '/' }) }, component: DashboardPage })
+const comprasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/compras', component: ComprasPage, beforeLoad: blockFuncionario })
+const transferenciasRoute = createRoute({ getParentRoute: () => rootRoute, path: '/transferencias', component: TransferenciasPage, beforeLoad: blockFuncionario })
+const qrRoute = createRoute({ getParentRoute: () => rootRoute, path: '/qr/$id', component: QRPage, beforeLoad: blockFuncionario })
 
 // Funcionario routes (guard: funcionario_de_validacion only)
 const funcionarioLayoutRoute = createRoute({
@@ -151,6 +171,7 @@ const userLayoutRoute = createRoute({
   component: UserLayout,
   beforeLoad: () => {
     if (!isLoggedIn()) throw redirect({ to: '/login' })
+    blockFuncionario()
   },
 })
 
@@ -181,6 +202,7 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
   registerRoute,
+  eventosListRoute,
   eventoRoute,
   dashboardRoute,
   comprasRoute,

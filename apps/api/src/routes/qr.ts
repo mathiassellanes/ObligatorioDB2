@@ -6,6 +6,7 @@ import { authMiddleware } from '../middleware/auth.js'
 import { roleGuard } from '../middleware/roles.js'
 import * as qrService from '../services/qr.service.js'
 import * as dispositivoService from '../services/dispositivo.service.js'
+import { notificarValidacion } from '../lib/realtime.js'
 
 const qr = new Hono()
 
@@ -37,6 +38,17 @@ qr.post(
     const body = c.req.valid('json')
     try {
       const result = await qrService.validarQR(body.codigo_rotativo, body.id_dispositivo)
+      // Avisar al dueño en tiempo real a qué sector dirigirse.
+      if (result.email_propietario) {
+        notificarValidacion(result.email_propietario, {
+          type: 'entrada_validada',
+          id_entrada: result.id_entrada,
+          nombre_sector: result.nombre_sector,
+          nombre_estadio: result.nombre_estadio,
+          nombre_equipo_local: result.nombre_equipo_local,
+          nombre_equipo_visitante: result.nombre_equipo_visitante,
+        })
+      }
       return c.json(result)
     } catch (err) {
       return c.json({ error: (err as Error).message }, 400)

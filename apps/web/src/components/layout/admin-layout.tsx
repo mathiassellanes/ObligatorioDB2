@@ -1,4 +1,4 @@
-import { Link, Outlet, useRouter } from '@tanstack/react-router'
+import { Link, Outlet } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { Estadio } from '@repo/shared'
@@ -6,7 +6,7 @@ import {
   Shield, Building2, Calendar, Users, BarChart3,
   ChevronRight, LogOut, Globe, Smartphone
 } from 'lucide-react'
-import { logout } from '@/lib/auth'
+import { useLogout } from '@/hooks/use-logout'
 
 const NAV = [
   { to: '/admin/eventos', icon: Calendar, label: 'Eventos' },
@@ -17,16 +17,11 @@ const NAV = [
 ] as const
 
 export function AdminLayout() {
-  const router = useRouter()
+  const handleLogout = useLogout()
   const { data: estadios = [] } = useQuery<Estadio[]>({
     queryKey: ['admin-estadios'],
     queryFn: () => api.get('/admin/estadios'),
   })
-
-  function handleLogout() {
-    logout()
-    router.navigate({ to: '/login' })
-  }
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">

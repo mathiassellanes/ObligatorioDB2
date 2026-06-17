@@ -4,6 +4,7 @@ import { api } from '@/api/client'
 import { Modal } from '@/components/ui/modal'
 import { Smartphone, Plus, Trash2, Loader2, Copy, Check } from 'lucide-react'
 import type { EventoConNombres } from '@repo/shared'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Dispositivo = {
   id: string
@@ -59,15 +60,16 @@ export function AdminDispositivosPage() {
 
   return (
     <div className="p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title text-3xl">Dispositivos</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{dispositivos.length} dispositivos registrados</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nuevo dispositivo
-        </button>
-      </div>
+      <PageHeader
+        title="Dispositivos"
+        subtitle={`${dispositivos.length} dispositivos registrados`}
+        icon={Smartphone}
+        action={
+          <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nuevo dispositivo
+          </button>
+        }
+      />
 
       {isLoading ? (
         <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="card h-16 animate-pulse" />)}</div>
@@ -158,8 +160,8 @@ export function AdminDispositivosPage() {
           )}
           <button
             onClick={() => crearMutation.mutate(form)}
-            disabled={!form.numero_legajo || !form.id_evento || crearMutation.isPending}
-            className="btn-pitch w-full flex items-center justify-center gap-2"
+            disabled={form.numero_legajo.trim() === '' || form.id_evento <= 0 || crearMutation.isPending}
+            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {crearMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Crear dispositivo

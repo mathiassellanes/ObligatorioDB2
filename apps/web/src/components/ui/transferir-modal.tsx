@@ -49,6 +49,8 @@ export function TransferirModal({ open, onClose, entradaPreseleccionada }: Trans
 
   const selectedEntrada = entradas.find(e => e.id === form.id_entrada)
 
+  const valid = form.id_entrada > 0 && /\S+@\S+\.\S+/.test(form.email_destino)
+
   return (
     <Modal open={open} onClose={handleClose} title="Transferir entrada">
       <div className="space-y-4">
@@ -116,8 +118,8 @@ export function TransferirModal({ open, onClose, entradaPreseleccionada }: Trans
           </button>
           <button
             onClick={() => mutation.mutate(form)}
-            disabled={!form.id_entrada || !form.email_destino || mutation.isPending || mutation.isSuccess}
-            className="btn-pitch flex-1 flex items-center justify-center gap-2 py-2 text-sm"
+            disabled={!valid || mutation.isPending || mutation.isSuccess}
+            className="btn-pitch flex-1 flex items-center justify-center gap-2 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {mutation.isPending
               ? <><Loader2 className="w-4 h-4 animate-spin" />Enviando...</>

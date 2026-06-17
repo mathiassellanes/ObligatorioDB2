@@ -152,8 +152,8 @@ export function EventoDetailPage() {
           ) : (
             <button
               onClick={handleComprar}
-              disabled={comprarMutation.isPending}
-              className="btn-pitch flex items-center gap-2"
+              disabled={totalEntradas < 1 || totalEntradas > 5 || comprarMutation.isPending}
+              className="btn-pitch flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {comprarMutation.isPending
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Comprando...</>

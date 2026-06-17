@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { TrendingUp, Users, DollarSign, BarChart3 } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 export function AdminReportesPage() {
   const { data: eventos = [] } = useQuery<{ id: number; nombre_equipo_local: string; nombre_equipo_visitante: string; total_entradas: number }[]>({
@@ -17,10 +18,7 @@ export function AdminReportesPage() {
 
   return (
     <div className="p-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="section-title text-3xl">Reportes</h1>
-        <p className="text-[#6b7a9c] text-sm mt-1">Analítica del sistema</p>
-      </div>
+      <PageHeader title="Reportes" subtitle="Analítica del sistema" icon={BarChart3} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 mb-8">

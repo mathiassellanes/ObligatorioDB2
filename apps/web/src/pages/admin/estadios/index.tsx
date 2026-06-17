@@ -4,6 +4,7 @@ import { api } from '@/api/client'
 import type { Estadio, Sector } from '@repo/shared'
 import { Building2, ChevronRight, Plus, Loader2, MapPin, Layers } from 'lucide-react'
 import { useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
 
 type EstadioConSectores = Estadio & { sectores: Sector[] }
 
@@ -29,15 +30,16 @@ export function AdminEstadiosPage() {
 
   return (
     <div className="p-8 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title text-3xl">Estadios</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">Tus estadios asignados</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nuevo estadio
-        </button>
-      </div>
+      <PageHeader
+        title="Estadios"
+        subtitle="Tus estadios asignados"
+        icon={Building2}
+        action={
+          <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nuevo estadio
+          </button>
+        }
+      />
 
       {showForm && (
         <div className="card card-glow p-5 mb-6">
@@ -51,8 +53,8 @@ export function AdminEstadiosPage() {
             />
             <button
               onClick={() => crearMutation.mutate({ nombre })}
-              disabled={!nombre || crearMutation.isPending}
-              className="btn-pitch flex items-center gap-2 px-5"
+              disabled={nombre.trim() === '' || crearMutation.isPending}
+              className="btn-pitch flex items-center gap-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {crearMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Crear

@@ -5,6 +5,7 @@ import { api } from '@/api/client'
 import type { EntradaConEvento } from '@repo/shared'
 import { Ticket, QrCode, ArrowRightLeft, MapPin, CheckCircle2 } from 'lucide-react'
 import { TransferirModal } from '@/components/ui/transferir-modal'
+import { PageHeader } from '@/components/ui/page-header'
 
 export function EntradasPage() {
   const { data: entradas = [], isLoading } = useQuery<EntradaConEvento[]>({
@@ -25,16 +26,17 @@ export function EntradasPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title">Mis Entradas</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{entradas.length} entradas en total</p>
-        </div>
-        <div className="flex gap-2">
-          <span className="badge-pitch flex items-center gap-1"><Ticket className="w-3 h-3" />{activas.length} activas</span>
-          {usadas.length > 0 && <span className="badge-red">{usadas.length} usadas</span>}
-        </div>
-      </div>
+      <PageHeader
+        title="Mis Entradas"
+        subtitle={`${entradas.length} entradas en total`}
+        icon={Ticket}
+        action={
+          <div className="flex gap-2">
+            <span className="badge-pitch flex items-center gap-1"><Ticket className="w-3 h-3" />{activas.length} activas</span>
+            {usadas.length > 0 && <span className="badge-red">{usadas.length} usadas</span>}
+          </div>
+        }
+      />
 
       {entradas.length === 0 ? (
         <div className="card p-16 text-center">

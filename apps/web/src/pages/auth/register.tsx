@@ -20,6 +20,12 @@ export function RegisterPage() {
     setForm((p) => ({ ...p, [k]: v }))
   }
 
+  const valid =
+    Object.values(form).every((v) => v.trim() !== '') &&
+    form.password.length >= 8 &&
+    /\S+@\S+\.\S+/.test(form.email) &&
+    telefonos.some((t) => t.trim() !== '')
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -137,7 +143,8 @@ export function RegisterPage() {
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">{error}</div>
           )}
 
-          <button type="submit" disabled={loading} className="btn-pitch w-full flex items-center justify-center gap-2">
+          <button type="submit" disabled={!valid || loading}
+            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Registrando...' : 'Crear cuenta'}
           </button>

@@ -88,7 +88,6 @@ export async function misEntradas(email: string) {
     JOIN sector s     ON s.id   = en.id_sector
     JOIN sector_evento se ON se.id_sector = en.id_sector AND se.id_evento = en.id_evento
     WHERE en.email_propietario_actual = ${email}
-      AND en.consumida = FALSE
     ORDER BY ev.fecha, ev.hora
   `
 }

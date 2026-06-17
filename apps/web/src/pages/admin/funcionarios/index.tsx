@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { Modal } from '@/components/ui/modal'
 import { Shield, Plus, Loader2, User, KeyRound, Hash } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Funcionario = {
   numero_legajo: string
@@ -41,17 +42,23 @@ export function AdminFuncionariosPage() {
     },
   })
 
+  const valid =
+    Object.values(form).every(v => v.trim() !== '') &&
+    /\S+@\S+\.\S+/.test(form.email) &&
+    form.password.length >= 6
+
   return (
     <div className="p-8 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="section-title text-3xl">Funcionarios</h1>
-          <p className="text-[#6b7a9c] text-sm mt-1">{funcionarios.length} funcionarios registrados</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-          <Plus className="w-4 h-4" />Nuevo funcionario
-        </button>
-      </div>
+      <PageHeader
+        title="Funcionarios"
+        subtitle={`${funcionarios.length} funcionarios registrados`}
+        icon={Shield}
+        action={
+          <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+            <Plus className="w-4 h-4" />Nuevo funcionario
+          </button>
+        }
+      />
 
       {isLoading ? (
         <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="card h-16 animate-pulse" />)}</div>
@@ -170,8 +177,8 @@ export function AdminFuncionariosPage() {
           )}
           <button
             onClick={() => crearMutation.mutate(form)}
-            disabled={crearMutation.isPending || !form.email || !form.password || !form.numero_legajo}
-            className="btn-pitch w-full flex items-center justify-center gap-2"
+            disabled={!valid || crearMutation.isPending}
+            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {crearMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Crear funcionario

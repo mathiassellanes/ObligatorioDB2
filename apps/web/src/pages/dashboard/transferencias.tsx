@@ -44,6 +44,8 @@ export function TransferenciasPage() {
 
   const [nuevaForm, setNuevaForm] = useState({ id_entrada: 0, email_destino: '' })
 
+  const nuevaValid = nuevaForm.id_entrada > 0 && /\S+@\S+\.\S+/.test(nuevaForm.email_destino)
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="section-title mb-2">Transferencias</h1>
@@ -134,8 +136,8 @@ export function TransferenciasPage() {
             )}
             <button
               onClick={() => transferirMutation.mutate(nuevaForm)}
-              disabled={!nuevaForm.id_entrada || !nuevaForm.email_destino || transferirMutation.isPending}
-              className="btn-pitch w-full flex items-center justify-center gap-2"
+              disabled={!nuevaValid || transferirMutation.isPending}
+              className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {transferirMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Enviar transferencia

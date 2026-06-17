@@ -40,17 +40,31 @@ export async function validarQR(codigo_rotativo: string, id_dispositivo: string)
   `
   if (!dispositivo) throw new Error('Dispositivo no autorizado')
 
-  // Buscar QR activo
+  // Buscar el QR (en cualquier estado) para poder distinguir entre expirado,
+  // ya usado, y re-validación idempotente.
   const [qr] = await sql`
-    SELECT q.*, e.id_evento, e.id_sector, e.consumida
+    SELECT q.*, e.id_evento, e.id_sector, e.consumida,
+      (q.fecha_creacion > NOW() - INTERVAL '30 seconds') AS vigente
     FROM qr q
     JOIN entrada e ON e.id = q.id_entrada
     WHERE q.codigo_rotativo = ${codigo_rotativo}
-      AND q.fecha_de_uso IS NULL
-      AND q.fecha_creacion > NOW() - INTERVAL '30 seconds'
   `
   if (!qr) throw new Error('QR inválido o expirado')
-  if (qr.consumida) throw new Error('La entrada ya fue consumida')
+
+  // Idempotencia: el mismo dispositivo re-enviando el mismo QR (doble submit,
+  // reintento de red, doble-invoke de React) ve éxito en vez de un falso error.
+  if (qr.fecha_de_uso && qr.id_dispositivo_validacion === id_dispositivo) {
+    return { ok: true, id_entrada: qr.id_entrada }
+  }
+  // Usado por otro dispositivo, o la entrada ya fue consumida por otra vía.
+  if (qr.fecha_de_uso || qr.consumida) throw new Error('La entrada ya fue consumida')
+  if (!qr.vigente) throw new Error('QR inválido o expirado')
+
+  // El dispositivo está vinculado a un evento puntual (migración 005).
+  // Solo puede validar entradas de ese mismo evento.
+  if (dispositivo.id_evento !== qr.id_evento) {
+    throw new Error('Dispositivo no autorizado para este evento')
+  }
 
   // Verificar que el funcionario esté asignado al sector/evento
   const asignado = await sql`
@@ -60,7 +74,9 @@ export async function validarQR(codigo_rotativo: string, id_dispositivo: string)
       AND id_evento = ${qr.id_evento}
   `
   if (asignado.length === 0) {
-    throw new Error('El funcionario no está asignado a este sector')
+    // Indicar a qué sector pertenece el asistente para poder derivarlo.
+    const [s] = await sql`SELECT nombre FROM sector WHERE id = ${qr.id_sector}`
+    throw new Error(`El asistente pertenece a ${s?.nombre ?? `sector ${qr.id_sector}`} — no estás asignado a ese sector`)
   }
 
   // Marcar QR como usado y entrada como consumida
@@ -98,7 +114,31 @@ export async function validarQR(codigo_rotativo: string, id_dispositivo: string)
     `
   })
 
-  return { ok: true, id_entrada: qr.id_entrada }
+  // Datos para notificar al dueño en tiempo real (a qué sector ir).
+  const [info] = await sql`
+    SELECT e.email_propietario_actual AS email,
+      s.nombre  AS nombre_sector,
+      est.nombre AS nombre_estadio,
+      el.nombre  AS nombre_equipo_local,
+      evis.nombre AS nombre_equipo_visitante
+    FROM entrada e
+    JOIN sector s   ON s.id = e.id_sector
+    JOIN estadio est ON est.id = s.id_estadio
+    JOIN evento ev  ON ev.id = e.id_evento
+    JOIN equipo el  ON el.id = ev.id_equipo_local
+    JOIN equipo evis ON evis.id = ev.id_equipo_visitante
+    WHERE e.id = ${qr.id_entrada}
+  `
+
+  return {
+    ok: true,
+    id_entrada: qr.id_entrada,
+    email_propietario: info?.email as string,
+    nombre_sector: info?.nombre_sector as string,
+    nombre_estadio: info?.nombre_estadio as string,
+    nombre_equipo_local: info?.nombre_equipo_local as string,
+    nombre_equipo_visitante: info?.nombre_equipo_visitante as string,
+  }
 }
 
 export async function sectoresAsignados(numero_legajo: string, id_evento: number) {
