@@ -16,7 +16,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
 
   const userNavLinks = rol === 'usuario_general' ? [
     { to: '/', label: 'Inicio', icon: Home, exact: true },
-    { to: '/eventos', label: 'Eventos', icon: Calendar, exact: true },
+    { to: '/eventos', label: 'Partidos', icon: Calendar, exact: true },
     { to: '/u/entradas', label: 'Mis Entradas', icon: Ticket },
     { to: '/u/transferencias', label: 'Transferencias', icon: ArrowRightLeft },
     { to: '/u/perfil', label: 'Mi Perfil', icon: User },
