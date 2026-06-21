@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { EventoConNombres, Estadio, Equipo, CreateEventoDTO } from '@repo/shared'
 import { Calendar, Plus, ChevronRight, Loader2, MapPin } from 'lucide-react'
+import { Modal } from '@/components/ui/modal'
 import { PageHeader } from '@/components/ui/page-header'
 
 export function AdminEventosPage() {
@@ -21,14 +22,14 @@ export function AdminEventosPage() {
     queryFn: () => api.get('/equipos'),
   })
 
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ fecha: '', hora: '', id_estadio: 0, id_equipo_local: 0, id_equipo_visitante: 0 })
 
   const crearMutation = useMutation({
     mutationFn: (data: CreateEventoDTO) => api.post('/eventos', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eventos'] })
-      setShowForm(false)
+      setShowModal(false)
       setForm({ fecha: '', hora: '', id_estadio: 0, id_equipo_local: 0, id_equipo_visitante: 0 })
     },
   })
@@ -47,15 +48,14 @@ export function AdminEventosPage() {
         subtitle={`${eventos.length} eventos en total`}
         icon={Calendar}
         action={
-          <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
+          <button onClick={() => setShowModal(true)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
             <Plus className="w-4 h-4" />Nuevo evento
           </button>
         }
       />
 
-      {showForm && (
-        <div className="card card-glow p-6 mb-6">
-          <h3 className="font-display font-bold text-sm uppercase tracking-widest text-[#39ff14] mb-5">Nuevo evento</h3>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Nuevo evento" size="md">
+        <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div><label className="label">Fecha</label>
               <input type="date" className="input-field" value={form.fecha}
@@ -83,18 +83,18 @@ export function AdminEventosPage() {
               </select></div>
           </div>
           {crearMutation.isError && (
-            <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-red-400 text-sm">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-red-400 text-sm">
               {(crearMutation.error as Error).message}
             </div>
           )}
           <button onClick={() => crearMutation.mutate(form as unknown as CreateEventoDTO)}
             disabled={!valid || crearMutation.isPending}
-            className="btn-pitch mt-4 flex items-center gap-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {crearMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Crear evento
           </button>
         </div>
-      )}
+      </Modal>
 
       {isLoading ? (
         <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="card h-20 animate-pulse" />)}</div>
