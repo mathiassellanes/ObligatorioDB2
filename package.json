@@ -1,6 +1,7 @@
 {
   "name": "obligatorio-bd2",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev:api": "pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",

@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.local
+**/*.local
+.pnpm-store
+.git
+.github
+**/.DS_Store
+**/coverage
+**/*.log

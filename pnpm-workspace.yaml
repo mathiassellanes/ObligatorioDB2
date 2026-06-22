@@ -1,3 +1,7 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# Permitir el postinstall de esbuild (lo usan tsx y vite)
+onlyBuiltDependencies:
+  - esbuild
