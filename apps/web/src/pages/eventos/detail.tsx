@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { EventoDetalle, ComprarEntradasDTO } from '@repo/shared'
 import { isLoggedIn, getRol } from '@/lib/auth'
+import { parseDate } from '@/lib/date'
 import { MapPin, Clock, Users, ShoppingCart, Loader2, CheckCircle } from 'lucide-react'
 
 export function EventoDetailPage() {
@@ -47,7 +48,7 @@ export function EventoDetailPage() {
     </div>
   )
 
-  const fecha = new Date(evento.fecha)
+  const fecha = parseDate(evento.fecha)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -60,8 +61,10 @@ export function EventoDetailPage() {
               {' · '}{evento.hora?.toString().slice(0, 5)}h
             </div>
             <h1 className="font-display font-black text-4xl md:text-5xl uppercase tracking-tight leading-none mb-2">
+              <span className="mr-2">{evento.bandera_equipo_local}</span>
               <span className="text-[#39ff14]">{evento.nombre_equipo_local}</span>
               <span className="text-[#6b7a9c] mx-3 text-3xl">vs</span>
+              <span className="mr-2">{evento.bandera_equipo_visitante}</span>
               <span>{evento.nombre_equipo_visitante}</span>
             </h1>
             <div className="flex items-center gap-1.5 text-[#6b7a9c] text-sm mt-3">

@@ -111,7 +111,7 @@ export function TransferenciasPage() {
               <select className="input-field" value={nuevaForm.id_entrada}
                 onChange={e => setNuevaForm(f => ({ ...f, id_entrada: Number(e.target.value) }))}>
                 <option value={0}>Seleccioná una entrada...</option>
-                {entradas.map((en) => (
+                {entradas.filter(en => !en.consumida).map((en) => (
                   <option key={en.id} value={en.id}>
                     #{en.id} — {en.nombre_equipo_local} vs {en.nombre_equipo_visitante} · Sector {en.nombre_sector}
                   </option>

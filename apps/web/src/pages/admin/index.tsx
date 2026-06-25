@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { Estadio, Equipo, EventoConNombres, CreateEventoDTO } from '@repo/shared'
 import { Shield, Plus, Building2, Users, Calendar, BarChart3, Loader2, TrendingUp } from 'lucide-react'
+import { formatDate } from '@/lib/date'
 import { PageHeader } from '@/components/ui/page-header'
 
 export function AdminPage() {
@@ -108,7 +109,7 @@ function EventosTab() {
               <div className="font-display font-extrabold text-sm uppercase">
                 {ev.nombre_equipo_local} <span className="text-[#6b7a9c] font-400 normal-case">vs</span> {ev.nombre_equipo_visitante}
               </div>
-              <div className="text-xs text-[#6b7a9c]">{ev.nombre_estadio} · {new Date(ev.fecha).toLocaleDateString('es-UY')}</div>
+              <div className="text-xs text-[#6b7a9c]">{ev.nombre_estadio} · {formatDate(ev.fecha)}</div>
             </div>
           </div>
         ))}

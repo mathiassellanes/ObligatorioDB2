@@ -33,6 +33,7 @@ import { AdminEquipoDetailPage } from '@/pages/admin/equipos/detail'
 import { AdminReportesPage } from '@/pages/admin/reportes'
 import { AdminFuncionariosPage } from '@/pages/admin/funcionarios'
 import { AdminDispositivosPage } from '@/pages/admin/dispositivos'
+import { AdminDispositivoDetailPage } from '@/pages/admin/dispositivos/detail'
 
 // Root
 const rootRoute = createRootRoute({
@@ -162,6 +163,11 @@ const adminDispositivosRoute = createRoute({
   path: '/dispositivos',
   component: AdminDispositivosPage,
 })
+const adminDispositivoDetailRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/dispositivos/$id',
+  component: AdminDispositivoDetailPage,
+})
 
 
 // User layout (guard: must be logged in as usuario_general)
@@ -229,6 +235,7 @@ const routeTree = rootRoute.addChildren([
     adminReportesRoute,
     adminFuncionariosRoute,
     adminDispositivosRoute,
+    adminDispositivoDetailRoute,
   ]),
 ])
 

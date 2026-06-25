@@ -30,7 +30,7 @@ function remove(email: string, ws: WebSocket) {
 export function attachRealtime(server: Server) {
   server.on('upgrade', (req, socket: Duplex, head) => {
     const url = new URL(req.url ?? '', 'http://localhost')
-    if (url.pathname !== '/ws') return // let other upgrade handlers deal with it
+    if (url.pathname !== '/realtime') return // let other upgrade handlers deal with it
 
     const token = url.searchParams.get('token')
     if (!token) { socket.destroy(); return }

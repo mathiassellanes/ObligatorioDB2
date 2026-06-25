@@ -5,12 +5,8 @@ import { api } from '@/api/client'
 import type { EventoConNombres } from '@repo/shared'
 import { Calendar, MapPin, Zap, ChevronRight, ChevronLeft, Ticket } from 'lucide-react'
 import { isLoggedIn } from '@/lib/auth'
+import { parseDate } from '@/lib/date'
 
-const FLAGS: Record<string, string> = {
-  'Uruguay': '🇺🇾', 'Argentina': '🇦🇷', 'Brasil': '🇧🇷', 'Francia': '🇫🇷',
-  'Alemania': '🇩🇪', 'España': '🇪🇸', 'Portugal': '🇵🇹', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'USA': '🇺🇸', 'México': '🇲🇽', 'Canadá': '🇨🇦',
-}
 
 export function HomePage() {
   const trackRef = useRef<HTMLDivElement>(null)
@@ -148,9 +144,9 @@ export function HomePage() {
 }
 
 function EventoCard({ evento, active }: { evento: EventoConNombres; active: boolean }) {
-  const fecha = new Date(evento.fecha)
-  const flagLocal = FLAGS[evento.nombre_equipo_local] ?? '🏳️'
-  const flagVisitante = FLAGS[evento.nombre_equipo_visitante] ?? '🏳️'
+  const fecha = parseDate(evento.fecha)
+  const flagLocal = evento.bandera_equipo_local ?? '🏳️'
+  const flagVisitante = evento.bandera_equipo_visitante ?? '🏳️'
 
   return (
     <Link

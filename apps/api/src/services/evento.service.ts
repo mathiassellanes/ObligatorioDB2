@@ -7,7 +7,9 @@ export async function listarEventos() {
       e.*,
       est.nombre AS nombre_estadio,
       el.nombre  AS nombre_equipo_local,
-      ev.nombre  AS nombre_equipo_visitante
+      ev.nombre  AS nombre_equipo_visitante,
+      el.bandera AS bandera_equipo_local,
+      ev.bandera AS bandera_equipo_visitante
     FROM evento e
     JOIN estadio est ON est.id = e.id_estadio
     JOIN equipo el   ON el.id  = e.id_equipo_local
@@ -22,7 +24,9 @@ export async function getEvento(id: number) {
       e.*,
       est.nombre AS nombre_estadio,
       el.nombre  AS nombre_equipo_local,
-      ev.nombre  AS nombre_equipo_visitante
+      ev.nombre  AS nombre_equipo_visitante,
+      el.bandera AS bandera_equipo_local,
+      ev.bandera AS bandera_equipo_visitante
     FROM evento e
     JOIN estadio est ON est.id = e.id_estadio
     JOIN equipo el   ON el.id  = e.id_equipo_local
@@ -53,10 +57,13 @@ export async function crearEvento(data: CreateEventoDTO, email_admin: string) {
     throw new Error('No tenés permisos para crear eventos en ese estadio')
   }
 
+  // Normalizar fecha a string YYYY-MM-DD para evitar conversión UTC por postgres.js
+  const fechaStr = new Date(data.fecha).toISOString().slice(0, 10)
+
   // La superposición se valida via trigger en la DB
   const [row] = await sql`
     INSERT INTO evento (fecha, hora, id_estadio, id_equipo_local, id_equipo_visitante)
-    VALUES (${data.fecha}, ${data.hora}, ${data.id_estadio}, ${data.id_equipo_local}, ${data.id_equipo_visitante})
+    VALUES (${fechaStr}, ${data.hora}, ${data.id_estadio}, ${data.id_equipo_local}, ${data.id_equipo_visitante})
     RETURNING *
   `
   return row
@@ -87,6 +94,25 @@ export async function habilitarSectores(id_evento: number, data: HabilitarSector
   return inserted
 }
 
+export async function deshabilitarSector(id_evento: number, id_sector: number, email_admin: string) {
+  const [evento] = await sql`SELECT id_estadio FROM evento WHERE id = ${id_evento}`
+  if (!evento) throw new Error('Evento no encontrado')
+
+  const gestiona = await sql`
+    SELECT 1 FROM gestiona WHERE email_admin = ${email_admin} AND id_estadio = ${evento.id_estadio}
+  `
+  if (gestiona.length === 0) throw new Error('Sin permisos para este evento')
+
+  const [vendidas] = await sql`
+    SELECT COUNT(*)::int AS count FROM entrada
+    WHERE id_evento = ${id_evento} AND id_sector = ${id_sector}
+  `
+  if ((vendidas?.count ?? 0) > 0) throw new Error('No se puede deshabilitar un sector con entradas vendidas')
+
+  await sql`DELETE FROM sector_evento WHERE id_evento = ${id_evento} AND id_sector = ${id_sector}`
+  return { ok: true }
+}
+
 export async function asignarFuncionario(
   id_evento: number,
   id_sector: number,
@@ -97,19 +123,27 @@ export async function asignarFuncionario(
   `
   if (func.length === 0) throw new Error(`Funcionario con legajo "${numero_legajo}" no existe en el sistema`)
 
-  const [row] = await sql`
+  await sql`
     INSERT INTO asignado_a (numero_legajo, id_sector, id_evento)
     VALUES (${numero_legajo}, ${id_sector}, ${id_evento})
     ON CONFLICT DO NOTHING
-    RETURNING *
   `
-  return row
+  return { ok: true }
+}
+
+export async function desasignarFuncionario(id_evento: number, id_sector: number, numero_legajo: string) {
+  await sql`
+    DELETE FROM asignado_a
+    WHERE numero_legajo = ${numero_legajo} AND id_sector = ${id_sector} AND id_evento = ${id_evento}
+  `
+  return { ok: true }
 }
 
 export async function getAsignaciones(id_evento: number) {
   return sql`
     SELECT
       a.numero_legajo,
+      a.id_sector,
       f.email AS email_funcionario,
       s.nombre AS nombre_sector,
       COUNT(e.id) FILTER (WHERE e.id IS NOT NULL)     AS total_entradas,
@@ -120,7 +154,7 @@ export async function getAsignaciones(id_evento: number) {
     JOIN sector s ON s.id = a.id_sector
     LEFT JOIN entrada e ON e.id_sector = a.id_sector AND e.id_evento = a.id_evento
     WHERE a.id_evento = ${id_evento}
-    GROUP BY a.numero_legajo, f.email, s.nombre, a.validacion_completa
+    GROUP BY a.numero_legajo, a.id_sector, f.email, s.nombre, a.validacion_completa
     ORDER BY s.nombre, a.numero_legajo
   `
 }

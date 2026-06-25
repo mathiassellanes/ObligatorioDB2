@@ -39,6 +39,24 @@ equipos.get('/:id', zValidator('param', z.object({ id: z.coerce.number() })), as
   }
 })
 
+equipos.put(
+  '/:id',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.coerce.number() })),
+  zValidator('json', CreateEquipoDTO.partial()),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    const body = c.req.valid('json')
+    try {
+      const row = await equipoService.actualizarEquipo(id, body)
+      return c.json(row)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 409)
+    }
+  }
+)
+
 equipos.get('/:id/eventos', zValidator('param', z.object({ id: z.coerce.number() })), async (c) => {
   const { id } = c.req.valid('param')
   const rows = await equipoService.eventosDeEquipo(id)

@@ -102,16 +102,33 @@ describe('Zod schemas — validaciones de negocio', () => {
   })
 
   describe('ValidarQRDTO', () => {
-    test('acepta UUIDs válidos', () => {
+    test('acepta código corto válido', () => {
       const r = ValidarQRDTO.safeParse({
-        codigo_rotativo: '550e8400-e29b-41d4-a716-446655440000',
+        codigo_rotativo: 'ABCD3456',
         id_dispositivo: '550e8400-e29b-41d4-a716-446655440001',
+        id_sector: 1,
+        id_evento: 1,
       })
       assert.equal(r.success, true)
     })
 
-    test('rechaza no-UUID', () => {
-      const r = ValidarQRDTO.safeParse({ codigo_rotativo: 'notauuid', id_dispositivo: 'x' })
+    test('acepta UUID legacy', () => {
+      const r = ValidarQRDTO.safeParse({
+        codigo_rotativo: '550e8400-e29b-41d4-a716-446655440000',
+        id_dispositivo: '550e8400-e29b-41d4-a716-446655440001',
+        id_sector: 1,
+        id_evento: 1,
+      })
+      assert.equal(r.success, true)
+    })
+
+    test('rechaza código vacío', () => {
+      const r = ValidarQRDTO.safeParse({ codigo_rotativo: 'abc', id_dispositivo: '550e8400-e29b-41d4-a716-446655440001' })
+      assert.equal(r.success, false)
+    })
+
+    test('rechaza id_dispositivo no-UUID', () => {
+      const r = ValidarQRDTO.safeParse({ codigo_rotativo: 'ABCD3456', id_dispositivo: 'notauuid' })
       assert.equal(r.success, false)
     })
   })

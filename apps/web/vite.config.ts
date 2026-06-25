@@ -22,9 +22,10 @@ export default defineConfig({
         target: API_TARGET,
         rewrite: (p) => p.replace(/^\/api/, ''),
       },
-      '/ws': {
+      '/realtime': {
         target: API_TARGET,
         ws: true,
+        changeOrigin: true,
       },
     },
   },

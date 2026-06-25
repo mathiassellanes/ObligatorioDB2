@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { api } from '@/api/client'
 import type { EntradaConEvento } from '@repo/shared'
 import { Ticket, QrCode, ArrowRightLeft, MapPin, CheckCircle2 } from 'lucide-react'
+import { parseDate } from '@/lib/date'
 import { TransferirModal } from '@/components/ui/transferir-modal'
 import { PageHeader } from '@/components/ui/page-header'
 
@@ -84,7 +85,7 @@ export function EntradasPage() {
 function EntradaCard({
   entrada, used = false, onTransferir,
 }: { entrada: EntradaConEvento; used?: boolean; onTransferir?: () => void }) {
-  const fecha = new Date(entrada.fecha_evento)
+  const fecha = parseDate(entrada.fecha_evento)
   return (
     <div className={`card p-5 ${used ? 'border-[#1a2540]' : 'card-glow'}`}>
       <div className="flex items-start justify-between mb-4">

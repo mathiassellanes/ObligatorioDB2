@@ -3,6 +3,7 @@ import { useParams } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { Estadio, Sector, EventoConNombres } from '@repo/shared'
+import { formatDate } from '@/lib/date'
 import { Building2, Calendar, Layers, MapPin, Plus, Loader2, ChevronRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
@@ -186,7 +187,7 @@ export function AdminEstadioDetailPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[#6b7a9c] font-mono text-xs">
-                      {new Date(ev.fecha).toLocaleDateString('es-UY')}
+                      {formatDate(ev.fecha)}
                     </td>
                     <td className="px-4 py-3 text-[#6b7a9c] font-mono text-xs">
                       {ev.hora?.toString().slice(0, 5)}h

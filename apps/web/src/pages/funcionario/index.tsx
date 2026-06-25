@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
 import { Camera, Keyboard, Scan, Shield, Loader2, AlertTriangle } from 'lucide-react'
+import { parseDate } from '@/lib/date'
 
 type SectorAsignado = {
   id_sector: number
@@ -12,6 +13,7 @@ type SectorAsignado = {
   nombre_equipo_local: string
   nombre_equipo_visitante: string
   fecha_evento: string
+  hora_evento: string
   validacion_completa: boolean
   dispositivo_id: string | null
 }
@@ -138,7 +140,7 @@ export function FuncionarioPage() {
   }
 
   function handleManualSubmit() {
-    if (manual.trim()) navigate(manual.trim())
+    if (manual.trim()) navigate(manual.trim().toUpperCase())
   }
 
   if (isLoading) return (
@@ -170,7 +172,7 @@ export function FuncionarioPage() {
             <option value="">Seleccioná sector...</option>
             {sectores.map(s => (
               <option key={`${s.id_sector}-${s.id_evento}`} value={`${s.id_sector}-${s.id_evento}`}>
-                {s.nombre_sector} — {s.nombre_equipo_local} vs {s.nombre_equipo_visitante}
+                {s.nombre_sector} — {s.nombre_equipo_local} vs {s.nombre_equipo_visitante} · {parseDate(s.fecha_evento).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })} {String(s.hora_evento).slice(0, 5)}h
               </option>
             ))}
           </select>

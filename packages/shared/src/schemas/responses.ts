@@ -10,6 +10,8 @@ export const EventoConNombresSchema = EventoSchema.extend({
   nombre_estadio: z.string(),
   nombre_equipo_local: z.string(),
   nombre_equipo_visitante: z.string(),
+  bandera_equipo_local: z.string().default('🏳️'),
+  bandera_equipo_visitante: z.string().default('🏳️'),
 })
 
 // Sector habilitado para un evento con entradas vendidas
@@ -31,6 +33,8 @@ export const EntradaConEventoSchema = EntradaSchema.extend({
   nombre_estadio: z.string(),
   nombre_equipo_local: z.string(),
   nombre_equipo_visitante: z.string(),
+  bandera_equipo_local: z.string().default('🏳️'),
+  bandera_equipo_visitante: z.string().default('🏳️'),
   nombre_sector: z.string(),
   costo_entrada: z.number(),
 })

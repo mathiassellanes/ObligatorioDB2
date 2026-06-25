@@ -6,12 +6,14 @@ import { CheckCircle, XCircle, ArrowLeft, Loader2 } from 'lucide-react'
 
 export function FuncionarioResultadoPage() {
   const router = useRouter()
-  const { codigo, dispositivo } = useSearch({ from: '/funcionario/resultado' })
+  const { codigo, dispositivo, sector, evento } = useSearch({ from: '/funcionario/resultado' })
 
   const validarMutation = useMutation({
     mutationFn: () => api.post('/qr/validar', {
       codigo_rotativo: codigo,
       id_dispositivo: dispositivo,
+      id_sector: sector,
+      id_evento: evento,
     }),
   })
 

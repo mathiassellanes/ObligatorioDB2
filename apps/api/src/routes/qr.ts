@@ -36,8 +36,9 @@ qr.post(
   zValidator('json', ValidarQRDTO),
   async (c) => {
     const body = c.req.valid('json')
+    const user = c.get('user')
     try {
-      const result = await qrService.validarQR(body.codigo_rotativo, body.id_dispositivo)
+      const result = await qrService.validarQR(body.codigo_rotativo, body.id_dispositivo, user.sub, body.id_sector, body.id_evento)
       // Avisar al dueño en tiempo real a qué sector dirigirse.
       if (result.email_propietario) {
         notificarValidacion(result.email_propietario, {

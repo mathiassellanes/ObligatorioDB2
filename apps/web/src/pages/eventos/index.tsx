@@ -5,6 +5,7 @@ import { api } from '@/api/client'
 import type { EventoConNombres } from '@repo/shared'
 import { Calendar, MapPin, ChevronRight, Ticket, Search } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
+import { parseDate, dateStr, todayStr as getTodayStr } from '@/lib/date'
 
 type TimeFilter = 'todos' | 'hoy' | 'finde'
 
@@ -28,14 +29,14 @@ export function EventosListPage() {
   const [estadio, setEstadio] = useState<string | null>(null)
   const [pais, setPais] = useState<string | null>(null)
 
-  const now = Date.now()
+  const todayStr = getTodayStr()
   const { proximos, pasados } = useMemo(() => {
-    const sorted = [...eventos].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+    const sorted = [...eventos].sort((a, b) => dateStr(a.fecha).localeCompare(dateStr(b.fecha)))
     return {
-      proximos: sorted.filter((e) => new Date(e.fecha).getTime() >= now),
-      pasados: sorted.filter((e) => new Date(e.fecha).getTime() < now).reverse(),
+      proximos: sorted.filter((e) => dateStr(e.fecha) >= todayStr),
+      pasados: sorted.filter((e) => dateStr(e.fecha) < todayStr).reverse(),
     }
-  }, [eventos])
+  }, [eventos, todayStr])
 
   // Estadios disponibles entre los próximos, para los chips de filtro.
   const estadios = useMemo(
@@ -55,7 +56,7 @@ export function EventosListPage() {
     return proximos.filter((e) => {
       if (estadio && e.nombre_estadio !== estadio) return false
       if (pais && e.nombre_equipo_local !== pais && e.nombre_equipo_visitante !== pais) return false
-      const d = new Date(e.fecha)
+      const d = parseDate(e.fecha)
       if (time === 'hoy' && !esHoy(d)) return false
       if (time === 'finde' && !esFinde(d)) return false
       if (q) {
@@ -139,14 +140,14 @@ export function EventosListPage() {
 }
 
 function EventoCard({ evento, past }: { evento: EventoConNombres; past?: boolean }) {
-  const fecha = new Date(evento.fecha)
+  const fecha = parseDate(evento.fecha)
   return (
     <Link
       to="/eventos/$id"
       params={{ id: String(evento.id) }}
       className="card card-glow p-3.5 group hover:ring-1 hover:ring-[#39ff14]/30 transition-all"
     >
-      <div className="flex items-center justify-between mb-2 gap-2">
+      <div className="flex items-center justify-between mb-3 gap-2">
         <span className="font-mono text-[11px] text-[#6b7a9c]">
           {fecha.toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })}
           {' · '}{evento.hora?.toString().slice(0, 5)}h
@@ -155,13 +156,24 @@ function EventoCard({ evento, past }: { evento: EventoConNombres; past?: boolean
           <MapPin className="w-3 h-3 shrink-0" />{evento.nombre_estadio}
         </span>
       </div>
-      <h3 className="font-display font-extrabold text-base uppercase leading-tight">
-        <span className={past ? 'text-[#6b7a9c]' : 'text-[#39ff14]'}>{evento.nombre_equipo_local}</span>
-        <span className="text-[#6b7a9c] mx-1.5 text-sm">vs</span>
-        {evento.nombre_equipo_visitante}
-      </h3>
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-2xl">{evento.bandera_equipo_local ?? '🏳️'}</span>
+        <div className="flex-1 min-w-0">
+          <span className={`font-display font-extrabold text-sm uppercase leading-tight block truncate ${past ? 'text-[#6b7a9c]' : 'text-[#39ff14]'}`}>
+            {evento.nombre_equipo_local}
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-2xl">{evento.bandera_equipo_visitante ?? '🏳️'}</span>
+        <div className="flex-1 min-w-0">
+          <span className="font-display font-extrabold text-sm uppercase leading-tight block truncate text-[#e8edf8]">
+            {evento.nombre_equipo_visitante}
+          </span>
+        </div>
+      </div>
       {!past && (
-        <span className="flex items-center gap-1 mt-2 text-[#39ff14] text-[11px] font-display font-bold uppercase tracking-wide
+        <span className="flex items-center gap-1 mt-1 text-[#39ff14] text-[11px] font-display font-bold uppercase tracking-wide
                          group-hover:translate-x-0.5 transition-transform">
           <Ticket className="w-3 h-3" />Ver entradas <ChevronRight className="w-3 h-3" />
         </span>

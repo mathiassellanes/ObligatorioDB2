@@ -6,20 +6,26 @@ import type { EntradaConEvento, TransferenciaConEvento, EventoConNombres } from 
 import {
   Ticket, QrCode, MapPin, CalendarClock, Inbox,
 } from 'lucide-react'
+import { parseDate } from '@/lib/date'
 
 const VER_TODOS_TOPE = 4
 
 /** Event start as a real datetime (fecha is a date, hora is "HH:MM:SS"). */
 function eventDate(e: { fecha_evento: string | Date; hora_evento?: string }) {
-  const d = new Date(e.fecha_evento)
+  const d = parseDate(e.fecha_evento)
   const [h, m] = (e.hora_evento ?? '').split(':')
   if (h) d.setHours(Number(h), Number(m) || 0, 0, 0)
   return d
 }
 
 function cuentaRegresiva(target: Date) {
-  const ms = target.getTime() - Date.now()
-  if (ms <= 0) return 'Hoy'
+  const now = new Date()
+  const ms = target.getTime() - now.getTime()
+  const sameDay =
+    target.getFullYear() === now.getFullYear() &&
+    target.getMonth() === now.getMonth() &&
+    target.getDate() === now.getDate()
+  if (ms <= 0) return sameDay ? 'Hoy' : 'Pasado'
   const dias = Math.floor(ms / 86_400_000)
   if (dias >= 1) return `en ${dias} día${dias === 1 ? '' : 's'}`
   const horas = Math.max(1, Math.floor(ms / 3_600_000))
@@ -49,8 +55,8 @@ export function DashboardPage() {
   const proximosEventos = useMemo(() => {
     const now = Date.now()
     return eventos
-      .filter((e) => new Date(e.fecha).getTime() >= now)
-      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+      .filter((e) => parseDate(e.fecha).getTime() >= now)
+      .sort((a, b) => parseDate(a.fecha).getTime() - parseDate(b.fecha).getTime())
       .slice(0, VER_TODOS_TOPE)
   }, [eventos])
 
@@ -60,7 +66,7 @@ export function DashboardPage() {
       .filter((e) => !e.consumida)
       .sort((a, b) => eventDate(a).getTime() - eventDate(b).getTime())
     const now = Date.now()
-    const proxima = activas.find((e) => eventDate(e).getTime() >= now) ?? activas[0]
+    const proxima = activas.find((e) => eventDate(e).getTime() >= now)
     return { activas, proxima, resto: activas.filter((e) => e.id !== proxima?.id).slice(0, 3) }
   }, [entradas])
 
@@ -151,7 +157,7 @@ export function DashboardPage() {
 }
 
 function EventoBuyCard({ evento }: { evento: EventoConNombres }) {
-  const fecha = new Date(evento.fecha)
+  const fecha = parseDate(evento.fecha)
   return (
     <Link
       to="/eventos/$id"
@@ -171,8 +177,10 @@ function EventoBuyCard({ evento }: { evento: EventoConNombres }) {
           </span>
         </div>
         <h3 className="font-display font-extrabold text-lg uppercase leading-tight text-center mb-4">
+          <span className="mr-1">{evento.bandera_equipo_local}</span>
           <span className="text-[#39ff14]">{evento.nombre_equipo_local}</span>
           <span className="text-[#3a4a6b] mx-2 text-base">vs</span>
+          <span className="mr-1">{evento.bandera_equipo_visitante}</span>
           {evento.nombre_equipo_visitante}
         </h3>
         <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#39ff14] text-[#050914]
@@ -194,8 +202,10 @@ function ProximaEntrada({ entrada }: { entrada: EntradaConEvento }) {
         Próximo · {cuentaRegresiva(fecha)}
       </div>
       <h3 className="font-display font-extrabold text-base uppercase leading-tight">
+        <span className="mr-1">{entrada.bandera_equipo_local}</span>
         <span className="text-[#39ff14]">{entrada.nombre_equipo_local}</span>
         <span className="text-[#3a4a6b] mx-1.5 text-sm">vs</span>
+        <span className="mr-1">{entrada.bandera_equipo_visitante}</span>
         {entrada.nombre_equipo_visitante}
       </h3>
       <div className="font-mono text-[11px] text-[#6b7a9c] mt-1 flex items-center gap-1.5">

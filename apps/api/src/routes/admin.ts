@@ -37,18 +37,88 @@ admin.post(
   '/dispositivos',
   authMiddleware,
   roleGuard('admin_por_pais_sede'),
-  zValidator('json', z.object({
-    numero_legajo: z.string().min(1),
-    id_evento: z.number().int().positive(),
-  })),
+  zValidator('json', z.object({ numero_legajo: z.string().min(1), nombre: z.string().min(1).max(100) })),
   async (c) => {
-    const { numero_legajo, id_evento } = c.req.valid('json')
+    const { numero_legajo, nombre } = c.req.valid('json')
     try {
-      const row = await dispositivoService.crearDispositivo(numero_legajo, id_evento)
+      const row = await dispositivoService.crearDispositivo(numero_legajo, nombre)
       return c.json(row, 201)
     } catch (err) {
       return c.json({ error: (err as Error).message }, 400)
     }
+  }
+)
+
+admin.get(
+  '/dispositivos/:id',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.string().uuid() })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    try {
+      const [disp, eventos] = await Promise.all([
+        dispositivoService.getDispositivo(id),
+        dispositivoService.getDispositivoEventos(id),
+      ])
+      return c.json({ ...disp, eventos })
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 404)
+    }
+  }
+)
+
+admin.put(
+  '/dispositivos/:id',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.string().uuid() })),
+  zValidator('json', z.object({
+    nombre: z.string().min(1).max(100).optional(),
+    numero_legajo: z.string().min(1).optional(),
+  })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    const body = c.req.valid('json')
+    try {
+      const row = await dispositivoService.actualizarDispositivo(id, body)
+      return c.json(row)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 404)
+    }
+  }
+)
+
+admin.post(
+  '/dispositivos/:id/eventos',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.string().uuid() })),
+  zValidator('json', z.object({
+    id_evento: z.number().int().positive(),
+    numero_legajo: z.string().min(1),
+  })),
+  async (c) => {
+    const { id } = c.req.valid('param')
+    const { id_evento, numero_legajo } = c.req.valid('json')
+    try {
+      const row = await dispositivoService.vincularEvento(id, id_evento, numero_legajo)
+      return c.json(row, 201)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 400)
+    }
+  }
+)
+
+admin.delete(
+  '/dispositivos/:id/eventos/:id_evento',
+  authMiddleware,
+  roleGuard('admin_por_pais_sede'),
+  zValidator('param', z.object({ id: z.string().uuid(), id_evento: z.coerce.number() })),
+  async (c) => {
+    const { id, id_evento } = c.req.valid('param')
+    await dispositivoService.desvincularEvento(id, id_evento)
+    return c.json({ ok: true })
   }
 )
 

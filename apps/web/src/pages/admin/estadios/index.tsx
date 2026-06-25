@@ -1,31 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { api } from '@/api/client'
 import type { Estadio, Sector } from '@repo/shared'
-import { Building2, ChevronRight, Plus, Loader2, MapPin, Layers } from 'lucide-react'
-import { useState } from 'react'
+import { Building2, ChevronRight, MapPin } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 
 type EstadioConSectores = Estadio & { sectores: Sector[] }
 
 export function AdminEstadiosPage() {
-  const qc = useQueryClient()
   const { data: estadios = [], isLoading } = useQuery<Estadio[]>({
     queryKey: ['admin-estadios'],
     queryFn: () => api.get('/admin/estadios'),
-  })
-
-  const [showForm, setShowForm] = useState(false)
-  const [nombre, setNombre] = useState('')
-
-  const crearMutation = useMutation({
-    mutationFn: (data: { nombre: string }) => api.post('/estadios', data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-estadios'] })
-      qc.invalidateQueries({ queryKey: ['estadios'] })
-      setNombre('')
-      setShowForm(false)
-    },
   })
 
   return (
@@ -34,37 +19,7 @@ export function AdminEstadiosPage() {
         title="Estadios"
         subtitle="Tus estadios asignados"
         icon={Building2}
-        action={
-          <button onClick={() => setShowForm(!showForm)} className="btn-pitch flex items-center gap-1.5 py-2 px-4 text-sm">
-            <Plus className="w-4 h-4" />Nuevo estadio
-          </button>
-        }
       />
-
-      {showForm && (
-        <div className="card card-glow p-5 mb-6">
-          <h3 className="font-display font-bold text-sm uppercase tracking-widest text-[#39ff14] mb-4">Nuevo estadio</h3>
-          <div className="flex gap-3">
-            <input
-              className="input-field flex-1"
-              placeholder="Nombre del estadio..."
-              value={nombre}
-              onChange={e => setNombre(e.target.value)}
-            />
-            <button
-              onClick={() => crearMutation.mutate({ nombre })}
-              disabled={nombre.trim() === '' || crearMutation.isPending}
-              className="btn-pitch flex items-center gap-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {crearMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              Crear
-            </button>
-          </div>
-          {crearMutation.isError && (
-            <p className="text-red-400 text-xs mt-2">{(crearMutation.error as Error).message}</p>
-          )}
-        </div>
-      )}
 
       {isLoading ? (
         <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="card h-20 animate-pulse" />)}</div>

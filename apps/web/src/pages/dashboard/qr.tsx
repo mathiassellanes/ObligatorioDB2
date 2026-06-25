@@ -6,6 +6,7 @@ import type { QRActivo, EntradaConEvento } from '@repo/shared'
 import { QRCodeSVG } from 'qrcode.react'
 import { Shield, RefreshCw, CheckCircle, MapPin, CalendarClock, Ticket } from 'lucide-react'
 import { useValidacionWS, type ValidacionEvent } from '@/hooks/use-validacion-ws'
+import { parseDate } from '@/lib/date'
 
 export function QRPage() {
   const { id } = useParams({ from: '/qr/$id' })
@@ -52,7 +53,7 @@ export function QRPage() {
     return () => clearInterval(interval)
   }, [qr?.codigo_rotativo, refetch, yaUsada])
 
-  const fecha = entrada ? new Date(entrada.fecha_evento) : null
+  const fecha = entrada ? parseDate(entrada.fecha_evento) : null
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
@@ -114,11 +115,17 @@ export function QRPage() {
                   <div className="w-[220px] h-[220px] bg-[#0d1529] animate-pulse rounded" />
                 )}
               </div>
-              {['top-0 left-0', 'top-0 right-0', 'bottom-0 left-0', 'bottom-0 right-0'].map((pos, i) => (
-                <div key={i} className={`absolute ${pos} w-6 h-6 border-[#39ff14]
-                  ${i === 0 ? 'border-t-2 border-l-2' : i === 1 ? 'border-t-2 border-r-2' : i === 2 ? 'border-b-2 border-l-2' : 'border-b-2 border-r-2'}`} />
-              ))}
             </div>
+
+            {/* Código manual */}
+            {qr && (
+              <div className="flex flex-col items-center gap-1 mb-3">
+                <p className="text-[#6b7a9c] text-[10px] uppercase tracking-widest font-display font-bold">Código manual</p>
+                <span className="font-mono font-bold text-2xl tracking-[0.25em] text-[#e8edf8] bg-[#0d1529] px-4 py-2 rounded-lg border border-[#2a3654] select-all">
+                  {qr.codigo_rotativo}
+                </span>
+              </div>
+            )}
 
             {/* Progress bar */}
             <div className="mb-6">

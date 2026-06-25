@@ -1,28 +1,25 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { Modal } from '@/components/ui/modal'
-import { Smartphone, Plus, Trash2, Loader2, Copy, Check } from 'lucide-react'
-import type { EventoConNombres } from '@repo/shared'
+import { Smartphone, Plus, Trash2, Loader2, Copy, Check, ChevronRight } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 
 type Dispositivo = {
   id: string
+  nombre: string
   numero_legajo: string
   email: string
-  id_evento: number
-  nombre_equipo_local: string
-  nombre_equipo_visitante: string
-  fecha_evento: string
+  total_eventos: number
 }
 type Funcionario = { numero_legajo: string; email: string }
-
-const EMPTY = { numero_legajo: '', id_evento: 0 }
 
 export function AdminDispositivosPage() {
   const qc = useQueryClient()
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState(EMPTY)
+  const [nombre, setNombre] = useState('')
+  const [numero_legajo, setNumeroLegajo] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
 
   const { data: dispositivos = [], isLoading } = useQuery<Dispositivo[]>({
@@ -33,16 +30,13 @@ export function AdminDispositivosPage() {
     queryKey: ['admin-funcionarios'],
     queryFn: () => api.get('/admin/funcionarios'),
   })
-  const { data: eventos = [] } = useQuery<EventoConNombres[]>({
-    queryKey: ['eventos'],
-    queryFn: () => api.get('/eventos'),
-  })
 
   const crearMutation = useMutation({
-    mutationFn: (data: typeof EMPTY) => api.post('/admin/dispositivos', data),
+    mutationFn: () => api.post('/admin/dispositivos', { numero_legajo, nombre }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-dispositivos'] })
-      setForm(EMPTY)
+      setNombre('')
+      setNumeroLegajo('')
       setShowModal(false)
     },
   })
@@ -79,62 +73,55 @@ export function AdminDispositivosPage() {
           <p className="text-[#6b7a9c]">Sin dispositivos registrados.</p>
         </div>
       ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#1a2540]">
-                <th className="text-left px-4 py-3 text-[10px] font-display uppercase tracking-widest text-[#3a4a6b]">UUID</th>
-                <th className="text-left px-4 py-3 text-[10px] font-display uppercase tracking-widest text-[#3a4a6b]">Funcionario</th>
-                <th className="text-left px-4 py-3 text-[10px] font-display uppercase tracking-widest text-[#3a4a6b]">Evento</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {dispositivos.map((d, i) => (
-                <tr key={d.id} className={i < dispositivos.length - 1 ? 'border-b border-[#1a2540]' : ''}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <code className="font-mono text-xs text-[#6b7a9c] truncate max-w-[160px]">{d.id}</code>
-                      <button onClick={() => copyId(d.id)} className="text-[#3a4a6b] hover:text-[#39ff14] transition-colors shrink-0">
-                        {copied === d.id
-                          ? <Check className="w-3.5 h-3.5 text-[#39ff14]" />
-                          : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs bg-[#0d1529] border border-[#1a2540] px-2 py-0.5 rounded text-[#39ff14]">
-                        {d.numero_legajo}
-                      </span>
-                      <span className="text-xs text-[#6b7a9c] hidden sm:block">{d.email}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-[#e8edf8]">
-                    {d.nombre_equipo_local} vs {d.nombre_equipo_visitante}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => eliminarMutation.mutate(d.id)}
-                      disabled={eliminarMutation.isPending}
-                      className="text-[#3a4a6b] hover:text-red-400 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          {dispositivos.map((d) => (
+            <div key={d.id} className="card p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-[#0d1529] border border-[#1a2540] flex items-center justify-center shrink-0">
+                <Smartphone className="w-4 h-4 text-[#6b7a9c]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-semibold text-sm text-white">{d.nombre || <span className="text-[#3a4a6b] italic">Sin nombre</span>}</span>
+                  <code className="font-mono text-xs text-[#6b7a9c] truncate max-w-[140px]">{d.id}</code>
+                  <button onClick={() => copyId(d.id)} className="text-[#3a4a6b] hover:text-[#39ff14] transition-colors shrink-0">
+                    {copied === d.id ? <Check className="w-3.5 h-3.5 text-[#39ff14]" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs bg-[#0d1529] border border-[#1a2540] px-2 py-0.5 rounded text-[#39ff14]">
+                    {d.numero_legajo}
+                  </span>
+                  <span className="text-xs text-[#6b7a9c]">{d.email}</span>
+                  <span className="badge-pitch text-[10px]">{d.total_eventos} eventos</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link to="/admin/dispositivos/$id" params={{ id: d.id }}
+                  className="btn-outline py-1.5 px-3 text-xs flex items-center gap-1 hover:border-[#39ff1440]">
+                  Ver detalle <ChevronRight className="w-3 h-3" />
+                </Link>
+                <button onClick={() => eliminarMutation.mutate(d.id)}
+                  disabled={eliminarMutation.isPending}
+                  className="text-[#3a4a6b] hover:text-red-400 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nuevo dispositivo" size="sm">
         <div className="space-y-4">
           <div>
+            <label className="label">Nombre</label>
+            <input className="input-field" placeholder="Ej: Puerta Norte, Escáner A1..." value={nombre}
+              onChange={e => setNombre(e.target.value)} />
+          </div>
+          <div>
             <label className="label">Funcionario</label>
-            <select className="input-field" value={form.numero_legajo}
-              onChange={e => setForm(f => ({ ...f, numero_legajo: e.target.value }))}>
+            <select className="input-field" value={numero_legajo}
+              onChange={e => setNumeroLegajo(e.target.value)}>
               <option value="">Seleccioná funcionario...</option>
               {funcionarios.map(f => (
                 <option key={f.numero_legajo} value={f.numero_legajo}>
@@ -142,27 +129,15 @@ export function AdminDispositivosPage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="label">Evento</label>
-            <select className="input-field" value={form.id_evento}
-              onChange={e => setForm(f => ({ ...f, id_evento: Number(e.target.value) }))}>
-              <option value={0}>Seleccioná evento...</option>
-              {eventos.map(ev => (
-                <option key={ev.id} value={ev.id}>
-                  {ev.nombre_equipo_local} vs {ev.nombre_equipo_visitante}
-                </option>
-              ))}
-            </select>
+            <p className="text-[#6b7a9c] text-xs mt-2">Se genera un UUID único. Vinculás los eventos desde el detalle.</p>
           </div>
           {crearMutation.isError && (
             <p className="text-red-400 text-sm">{(crearMutation.error as Error).message}</p>
           )}
           <button
-            onClick={() => crearMutation.mutate(form)}
-            disabled={form.numero_legajo.trim() === '' || form.id_evento <= 0 || crearMutation.isPending}
-            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            onClick={() => crearMutation.mutate()}
+            disabled={nombre.trim() === '' || numero_legajo.trim() === '' || crearMutation.isPending}
+            className="btn-pitch w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {crearMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Crear dispositivo
           </button>

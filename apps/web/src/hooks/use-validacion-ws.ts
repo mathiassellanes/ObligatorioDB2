@@ -24,7 +24,7 @@ export function useValidacionWS(onEvent: (event: ValidacionEvent) => void) {
     if (!token) return
 
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const url = `${proto}://${window.location.host}/ws?token=${token}`
+    const url = `${proto}://${window.location.host}/realtime?token=${token}`
     let ws: WebSocket | null = null
     let closed = false
     let retry: ReturnType<typeof setTimeout>

@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const EquipoSchema = z.object({
   id: z.number().int().positive(),
   nombre: z.string().min(1).max(200),
+  bandera: z.string().min(1).max(10).default('🏳️'),
 })
 
 export const EstadioSchema = z.object({

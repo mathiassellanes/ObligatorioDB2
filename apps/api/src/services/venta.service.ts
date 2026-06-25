@@ -77,7 +77,9 @@ export async function misEntradas(email: string) {
     SELECT en.*, ev.fecha AS fecha_evento, ev.hora AS hora_evento,
       est.nombre AS nombre_estadio,
       el.nombre  AS nombre_equipo_local,
+      el.bandera AS bandera_equipo_local,
       evis.nombre AS nombre_equipo_visitante,
+      evis.bandera AS bandera_equipo_visitante,
       s.nombre   AS nombre_sector,
       se.costo_entrada
     FROM entrada en

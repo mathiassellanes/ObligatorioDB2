@@ -7,8 +7,20 @@ export async function listarEquipos() {
 
 export async function crearEquipo(data: CreateEquipoDTO) {
   const [row] = await sql`
-    INSERT INTO equipo (nombre) VALUES (${data.nombre}) RETURNING *
+    INSERT INTO equipo (nombre, bandera) VALUES (${data.nombre}, ${data.bandera ?? '🏳️'}) RETURNING *
   `
+  return row
+}
+
+export async function actualizarEquipo(id: number, data: Partial<CreateEquipoDTO>) {
+  const [row] = await sql`
+    UPDATE equipo
+    SET nombre  = COALESCE(${data.nombre ?? null}, nombre),
+        bandera = COALESCE(${data.bandera ?? null}, bandera)
+    WHERE id = ${id}
+    RETURNING *
+  `
+  if (!row) throw new Error('Equipo no encontrado')
   return row
 }
 
@@ -21,7 +33,8 @@ export async function getEquipo(id: number) {
 export async function eventosDeEquipo(id: number) {
   return sql`
     SELECT e.*, est.nombre AS nombre_estadio,
-           el.nombre AS nombre_equipo_local, ev.nombre AS nombre_equipo_visitante
+           el.nombre AS nombre_equipo_local, ev.nombre AS nombre_equipo_visitante,
+           el.bandera AS bandera_equipo_local, ev.bandera AS bandera_equipo_visitante
     FROM evento e
     JOIN estadio est ON est.id = e.id_estadio
     JOIN equipo el   ON el.id  = e.id_equipo_local

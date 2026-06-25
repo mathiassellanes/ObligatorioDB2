@@ -6,6 +6,7 @@ import type { EventoConNombres, Estadio, Equipo, CreateEventoDTO } from '@repo/s
 import { Calendar, Plus, ChevronRight, Loader2, MapPin } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { PageHeader } from '@/components/ui/page-header'
+import { parseDate, dateStr, todayStr as getTodayStr } from '@/lib/date'
 
 export function AdminEventosPage() {
   const qc = useQueryClient()
@@ -38,8 +39,9 @@ export function AdminEventosPage() {
     form.fecha.trim() !== '' && form.hora.trim() !== '' &&
     form.id_estadio > 0 && form.id_equipo_local > 0 && form.id_equipo_visitante > 0
 
-  const upcoming = eventos.filter(e => new Date(e.fecha) >= new Date())
-  const past = eventos.filter(e => new Date(e.fecha) < new Date())
+  const todayStr = getTodayStr()
+  const upcoming = eventos.filter(e => dateStr(e.fecha) >= todayStr)
+  const past = eventos.filter(e => dateStr(e.fecha) < todayStr)
 
   return (
     <div className="p-8 max-w-5xl">
@@ -132,15 +134,17 @@ function EventoRow({ ev }: { ev: EventoConNombres }) {
         <Calendar className="w-4 h-4 text-[#6b7a9c]" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-display font-extrabold text-sm uppercase">
+        <div className="font-display font-extrabold text-sm uppercase flex items-center gap-1.5 flex-wrap">
+          <span>{ev.bandera_equipo_local ?? '🏳️'}</span>
           <span className="text-[#39ff14]">{ev.nombre_equipo_local}</span>
-          <span className="text-[#6b7a9c] mx-2 font-normal normal-case text-xs">vs</span>
-          {ev.nombre_equipo_visitante}
+          <span className="text-[#6b7a9c] font-normal normal-case text-xs">vs</span>
+          <span>{ev.bandera_equipo_visitante ?? '🏳️'}</span>
+          <span>{ev.nombre_equipo_visitante}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-[#6b7a9c] mt-0.5">
           <MapPin className="w-3 h-3" />{ev.nombre_estadio}
           <span>·</span>
-          {new Date(ev.fecha).toLocaleDateString('es-UY')} · {ev.hora?.toString().slice(0, 5)}h
+          {parseDate(ev.fecha).toLocaleDateString('es-UY')} · {ev.hora?.toString().slice(0, 5)}h
         </div>
       </div>
       <ChevronRight className="w-4 h-4 text-[#3a4a6b] group-hover:text-[#39ff14] transition-colors shrink-0" />
